@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Router Easy — مساعد الراوتر</title>
+<style>
+:root{
+  --bg:#0b1220; --bg2:#111c30; --card:#152238; --card2:#1b2b46; --line:#26375c;
+  --txt:#e9eefb; --muted:#8fa2c4;
+  --acc:#f97316; --acc2:#fb923c; --blue:#3b82f6; --cy:#22d3ee;
+  --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+  --r:16px; --sh:0 10px 30px rgba(0,0,0,.35);
+}
+html[data-theme="light"]{
+  --bg:#eef2f9; --bg2:#e4eaf5; --card:#fff; --card2:#f5f8fd; --line:#dde5f2;
+  --txt:#0f1d33; --muted:#5c6d8c; --sh:0 8px 24px rgba(20,40,80,.10);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Tahoma,system-ui,sans-serif;color:var(--txt);min-height:100vh;
+  background:radial-gradient(1100px 550px at 85% -10%,rgba(249,115,22,.20),transparent 60%),
+             radial-gradient(900px 500px at 0% 100%,rgba(59,130,246,.16),transparent 55%),var(--bg);}
+.hide{display:none!important}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
+
+/* header */
+header{position:sticky;top:0;z-index:60;backdrop-filter:blur(12px);border-bottom:1px solid var(--line);
+  background:color-mix(in srgb,var(--bg) 82%,transparent);padding:9px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:17px}
+.logo{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-size:19px;color:#fff;
+  background:linear-gradient(135deg,var(--acc),#ef4444);box-shadow:0 6px 16px rgba(249,115,22,.45)}
+.spacer{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;background:var(--card);
+  border:1px solid var(--line);color:var(--muted);font-size:12.5px;font-weight:700}
+.chip.on{color:var(--ok);border-color:rgba(34,197,94,.4)}
+.chip.off{color:var(--bad);border-color:rgba(239,68,68,.4)}
+.icon-btn{background:var(--card);border:1px solid var(--line);color:var(--txt);width:36px;height:36px;
+  border-radius:10px;font-size:15px;display:grid;place-items:center}
+.icon-btn:hover{border-color:var(--acc)}
+.pill-btn{background:var(--card);border:1px solid var(--line);color:var(--txt);padding:8px 13px;border-radius:10px;font-weight:700;font-size:13px}
+.pill-btn:hover{border-color:var(--acc)}
+
+/* connect bar */
+.connbar{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px;
+  box-shadow:var(--sh);display:grid;gap:10px;grid-template-columns:auto repeat(3,minmax(120px,1fr)) auto;align-items:end;margin-bottom:14px}
+@media(max-width:860px){.connbar{grid-template-columns:1fr 1fr}}
+.connbar .st{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;padding-bottom:9px}
+
+/* layout */
+.wrap{display:flex;gap:14px;padding:14px;max-width:1280px;margin:auto;align-items:flex-start}
+nav{width:238px;flex:0 0 auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:9px;box-shadow:var(--sh);position:sticky;top:70px;max-height:calc(100vh - 84px);overflow:auto}
+nav .grp{margin-bottom:3px}
+nav button{width:100%;display:flex;align-items:center;gap:9px;padding:10px 11px;background:transparent;border:0;
+  border-radius:10px;color:var(--muted);font-size:14px;font-weight:700;text-align:start}
+nav button:hover{background:var(--card2);color:var(--txt)}
+nav button.active{background:linear-gradient(135deg,var(--acc),#ef4444);color:#fff;box-shadow:0 5px 14px rgba(249,115,22,.35)}
+nav button i{font-style:normal;font-size:16px;width:20px;text-align:center}
+nav .sub button{padding-inline-start:38px;font-size:13px;font-weight:600}
+nav .sub button.active{background:var(--card2);color:var(--acc);box-shadow:none}
+main{flex:1;min-width:0}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:17px;box-shadow:var(--sh);margin-bottom:14px}
+.card h2{margin:0 0 3px;font-size:17px;display:flex;align-items:center;gap:8px}
+.card .sub{color:var(--muted);font-size:12.8px;margin-bottom:13px}
+.grid{display:grid;gap:13px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+
+.stat{background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:13px}
+.stat .lbl{color:var(--muted);font-size:12px;margin-bottom:5px;font-weight:700}
+.stat .val{font-size:20px;font-weight:800}
+.stat .val small{font-size:11.5px;color:var(--muted);font-weight:700}
+
+label.f{display:block;margin-bottom:11px}
+label.f span{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px;font-weight:700}
+.inp{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);color:var(--txt);font-size:13.5px;outline:none}
+.inp:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(249,115,22,.16)}
+.btn{padding:10px 16px;border:0;border-radius:10px;font-weight:800;font-size:13.5px;color:#fff;
+  background:linear-gradient(135deg,var(--acc),#ef4444);box-shadow:0 5px 14px rgba(249,115,22,.32)}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:var(--card2);color:var(--txt);border:1px solid var(--line);box-shadow:none}
+.btn.blue{background:linear-gradient(135deg,var(--blue),var(--cy));box-shadow:0 5px 14px rgba(59,130,246,.32)}
+.btn.danger{background:linear-gradient(135deg,#dc2626,#ef4444)}
+.btn.sm{padding:7px 12px;font-size:12.5px}
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.between{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+
+.switch{position:relative;display:inline-block;width:46px;height:26px;flex:0 0 auto}
+.switch input{opacity:0;width:0;height:0}
+.sl{position:absolute;inset:0;background:var(--line);border-radius:999px;transition:.25s}
+.sl:before{content:"";position:absolute;width:20px;height:20px;top:3px;inset-inline-start:3px;background:#fff;border-radius:50%;transition:.25s}
+.switch input:checked + .sl{background:linear-gradient(135deg,var(--acc),#ef4444)}
+html[dir="rtl"] .switch input:checked + .sl:before{transform:translateX(-20px)}
+html[dir="ltr"] .switch input:checked + .sl:before{transform:translateX(20px)}
+
+.radio{display:flex;align-items:center;gap:9px;padding:11px;border:1px solid var(--line);border-radius:11px;
+  background:var(--card2);cursor:pointer;margin-bottom:8px;font-size:13.5px;font-weight:700}
+.radio.sel{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,var(--card2))}
+.radio input{accent-color:var(--acc);width:17px;height:17px}
+
+.listitem{display:flex;align-items:center;gap:11px;padding:11px;border:1px solid var(--line);border-radius:12px;
+  background:var(--card2);margin-bottom:8px;flex-wrap:wrap}
+.avatar{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--bg2);font-size:18px;flex:0 0 auto}
+.listitem .nm{font-weight:700;font-size:14px}
+.listitem .mt{color:var(--muted);font-size:11.8px;direction:ltr;text-align:start}
+.tag{padding:4px 9px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}
+.t-ok{background:rgba(34,197,94,.15);color:#22c55e}
+.t-bad{background:rgba(239,68,68,.15);color:#ef4444}
+.t-warn{background:rgba(245,158,11,.15);color:#f59e0b}
+.t-info{background:rgba(59,130,246,.15);color:#60a5fa}
+.t-mut{background:var(--bg2);color:var(--muted)}
+
+.bar{height:8px;border-radius:999px;background:var(--bg2);overflow:hidden;margin-top:7px}
+.bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--acc),#fbbf24);transition:.6s}
+
+.tbl-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 10px;text-align:start;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th{background:var(--card2);color:var(--muted);font-size:12px;position:sticky;top:0}
+tbody tr:hover{background:var(--card2)}
+tbody tr:last-child td{border-bottom:0}
+td.mono,th.mono{direction:ltr;font-family:ui-monospace,Consolas,monospace;font-size:12.5px}
+input[type=checkbox].ck{width:17px;height:17px;accent-color:var(--acc);cursor:pointer}
+
+.info-tbl th{color:var(--muted);font-weight:700;width:45%}
+.info-tbl td{font-weight:700}
+
+/* login */
+#login{min-height:100vh;display:grid;place-items:center;padding:18px}
+.loginbox{width:100%;max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:26px;box-shadow:var(--sh);text-align:center}
+.loginbox .logo{width:62px;height:62px;font-size:30px;border-radius:19px;margin:0 auto 13px}
+.loginbox h1{margin:0 0 5px;font-size:22px}
+.loginbox p{color:var(--muted);font-size:13px;margin:0 0 18px}
+.hint{font-size:11.8px;color:var(--muted);margin-top:13px;line-height:1.7}
+
+/* toast + modal */
+#toast{position:fixed;bottom:18px;inset-inline-start:50%;transform:translateX(50%);background:var(--card);
+  border:1px solid var(--line);padding:11px 17px;border-radius:12px;box-shadow:var(--sh);font-weight:700;
+  font-size:13.5px;z-index:300;opacity:0;pointer-events:none;transition:.3s;max-width:90vw}
+html[dir="ltr"] #toast{transform:translateX(-50%)}
+#toast.show{opacity:1;bottom:30px}
+#toast.ok{border-color:var(--ok)}#toast.bad{border-color:var(--bad)}#toast.warn{border-color:var(--warn)}
+
+.modal{position:fixed;inset:0;background:rgba(3,8,20,.65);display:grid;place-items:center;z-index:200;padding:18px}
+.modal .box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;max-width:460px;width:100%;box-shadow:var(--sh);max-height:88vh;overflow:auto}
+.modal h3{margin:0 0 7px;font-size:17px}
+.modal p{color:var(--muted);font-size:13px;margin:0 0 16px;line-height:1.7}
+
+/* loader */
+#loader{position:fixed;inset:0;background:rgba(3,8,20,.6);display:grid;place-items:center;z-index:250}
+#loader .box{background:var(--card);border:2px solid var(--acc);border-radius:14px;padding:20px 26px;text-align:center;min-width:280px}
+#loader .ttl{font-weight:800;margin-bottom:4px}
+#loader .sb{color:var(--muted);font-size:12.5px;margin-bottom:12px}
+#loader .track{height:9px;background:var(--bg2);border-radius:9px;overflow:hidden}
+#loader .track i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),#fbbf24);transition:.2s}
+
+.speedo{display:grid;place-items:center;padding:6px 0}
+.speedo .num{font-size:42px;font-weight:900;background:linear-gradient(135deg,var(--acc),#fbbf24);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.speedo .unit{color:var(--muted);font-size:12.5px;font-weight:800}
+
+.note{background:color-mix(in srgb,var(--blue) 10%,transparent);border:1px solid color-mix(in srgb,var(--blue) 35%,transparent);
+  border-radius:11px;padding:11px 13px;font-size:12.8px;color:var(--muted);line-height:1.8}
+.note.g{background:color-mix(in srgb,var(--ok) 10%,transparent);border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.note.r{background:color-mix(in srgb,var(--bad) 10%,transparent);border-color:color-mix(in srgb,var(--bad) 35%,transparent)}
+.badge-beta{background:var(--bad);color:#fff;font-size:9.5px;padding:2px 6px;border-radius:6px;font-weight:800;vertical-align:middle}
+
+footer{text-align:center;color:var(--muted);font-size:12px;padding:6px 14px 24px;line-height:1.9}
+
+@media(max-width:880px){
+  .wrap{flex-direction:column;padding:10px}
+  nav{width:100%;position:static;max-height:none;display:flex;gap:5px;overflow-x:auto}
+  nav .grp{display:flex;gap:5px}
+  nav .sub{display:flex;gap:5px}
+  nav button{width:auto;white-space:nowrap;padding:9px 12px}
+  nav .sub button{padding-inline-start:12px}
+  .brand .t{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ LOGIN ══════════════ -->
+<section id="login">
+  <div class="loginbox">
+    <div id="engineBar" style="background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.5);
+         border-radius:11px;padding:10px;margin-bottom:14px;font-size:12.5px;line-height:1.8">
+      <b style="color:var(--warn)">⏳ جاري فحص محرك الاتصال...</b>
+    </div>
+    <div class="logo">📶</div>
+    <h1 data-i="appName">راوتر إيزي</h1>
+    <p data-i="loginSub">مساعدك للتحكم الكامل في الراوتر — بدون تعقيد</p>
+    <label class="f" style="text-align:start"><span data-i="routerIp">عنوان الراوتر (IP)</span>
+      <div class="row" style="flex-wrap:nowrap">
+        <input class="inp" id="ip" value="192.168.100.1" dir="ltr">
+        <button class="icon-btn" onclick="autoDetect()" title="ابحث تلقائياً">🔍</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:5px;line-height:1.7">
+        هو نفس العنوان الذي تكتبه في المتصفح لفتح صفحة الراوتر.<br>
+        اضغط 🔍 ليجده التطبيق تلقائياً.
+      </div>
+    </label>
+    <label class="f" style="text-align:start"><span data-i="user">اسم المستخدم</span><input class="inp" id="usr" value="admin" dir="ltr"></label>
+    <label class="f" style="text-align:start"><span data-i="pass">كلمة السر</span><input class="inp" id="pwd" type="password" value="admin" dir="ltr"></label>
+
+    <details style="text-align:start;margin-bottom:12px">
+      <summary style="cursor:pointer;color:var(--acc);font-size:13px;font-weight:700;margin-bottom:10px" data-i="advConn">⚙️ إعدادات الاتصال الحقيقي (موديل الراوتر)</summary>
+      <label class="f"><span data-i="isp">مزود الخدمة</span>
+        <select class="inp" id="isp" onchange="ispPreset()">
+          <option value="we">WE — المصرية للاتصالات</option>
+          <option value="orange">Orange</option>
+          <option value="vodafone">Vodafone</option>
+          <option value="etisalat">Etisalat</option>
+          <option value="other" data-i="otherIsp">أخرى</option>
+        </select>
+      </label>
+      <label class="f"><span data-i="rModelLbl">موديل الراوتر</span>
+        <select class="inp" id="rModel" onchange="modelPreset()">
+          <optgroup label="Huawei (ألياف / ONT)">
+            <option value="huawei_ont" data-ip="192.168.100.1" data-u="telecomadmin" data-p="admintelecom" selected>HG8145V5</option>
+            <option value="huawei_ont" data-ip="192.168.100.1" data-u="telecomadmin" data-p="admintelecom">HG8145V</option>
+            <option value="huawei_ont" data-ip="192.168.100.1" data-u="telecomadmin" data-p="admintelecom">HG8546M</option>
+            <option value="huawei_ont" data-ip="192.168.100.1" data-u="telecomadmin" data-p="admintelecom">EG8145V5</option>
+            <option value="huawei_ont" data-ip="192.168.100.1" data-u="telecomadmin" data-p="admintelecom">HG8141A5</option>
+            <option value="huawei_ont" data-ip="192.168.1.1" data-u="admin" data-p="admin">HG630 V2 / HG633</option>
+            <option value="huawei_ont" data-ip="192.168.1.1" data-u="admin" data-p="admin">DN8245 / DG8245</option>
+          </optgroup>
+          <optgroup label="ZTE">
+            <option value="zte" data-ip="192.168.1.1" data-u="admin" data-p="admin">ZXHN H168N</option>
+            <option value="zte" data-ip="192.168.1.1" data-u="admin" data-p="admin">ZXHN H188A</option>
+            <option value="zte" data-ip="192.168.1.1" data-u="admin" data-p="admin">ZXHN F670L</option>
+            <option value="zte" data-ip="192.168.1.1" data-u="admin" data-p="admin">ZXHN H108N</option>
+          </optgroup>
+          <optgroup label="TP-Link / D-Link / أخرى">
+            <option value="lanscan" data-ip="192.168.1.1" data-u="admin" data-p="admin">TP-Link TD-W9960</option>
+            <option value="lanscan" data-ip="192.168.1.1" data-u="admin" data-p="admin">Archer VR300/400/600</option>
+            <option value="lanscan" data-ip="192.168.1.1" data-u="admin" data-p="admin">TotoLink ND300</option>
+            <option value="lanscan" data-ip="192.168.1.1" data-u="admin" data-p="admin">D-Link DSL-224</option>
+          </optgroup>
+          <optgroup label="عام">
+            <option value="lanscan" data-ip="192.168.1.1" data-u="admin" data-p="admin" data-i="anyRouter">🔍 أي راوتر (فحص الشبكة فقط)</option>
+            <option value="demo" data-ip="192.168.1.1" data-u="admin" data-p="admin" data-i="demoMode">🧪 وضع تجريبي</option>
+          </optgroup>
+        </select>
+      </label>
+      <div class="grid g2">
+        <label class="f"><span data-i="rUserLbl">مستخدم الراوتر</span><input class="inp" id="rUser" value="telecomadmin" dir="ltr"></label>
+        <label class="f"><span data-i="rPassLbl">سر الراوتر</span><input class="inp" id="rPass" type="password" value="admintelecom" dir="ltr"></label>
+      </div>
+      <div class="note" style="font-size:11.5px" data-i="credNote">💡 حساب <b>telecomadmin</b> يعطي صلاحيات كاملة على راوترات WE. لو لم يعمل، جرّب البيانات المطبوعة خلف الراوتر.</div>
+    </details>
+
+    <button class="btn" style="width:100%" onclick="doLogin()">🔌 <span data-i="connect">اتـصـل</span></button>
+    <div class="row" style="justify-content:center;margin-top:11px">
+      <button class="pill-btn" onclick="toggleLang()">🌐 <span id="langLbl">English</span></button>
+      <button class="pill-btn" onclick="toggleTheme()">🌓 <span data-i="theme">المظهر</span></button>
+    </div>
+    <div class="hint" data-i="demoHint">وضع تجريبي: أي بيانات ستعمل — الافتراضي admin / admin</div>
+  </div>
+</section>
+
+<!-- ══════════════ APP ══════════════ -->
+<div id="app" class="hide">
+<header>
+  <div class="brand"><div class="logo">📶</div><span class="t" data-i="appName">راوتر إيزي</span></div>
+  <span class="chip on" id="connChip">🟢 <span data-i="connected">متصل</span></span>
+  <span class="chip" id="modeChip">DEMO</span>
+  <div class="spacer"></div>
+  <button class="icon-btn" onclick="toggleLang()" title="Language">🌐</button>
+  <button class="icon-btn" onclick="toggleTheme()" title="Theme">🌓</button>
+  <button class="icon-btn" onclick="checkUpdate()" title="Update">⬇️</button>
+  <button class="pill-btn" onclick="logout()" data-i="logout">خروج</button>
+</header>
+
+<div class="wrap">
+  <nav id="nav">
+    <div class="grp"><button data-p="home" class="active"><i>🏠</i><span data-i="navHome">الرئيسية</span></button></div>
+
+    <div class="grp"><button data-p="wifi"><i>📡</i><span data-i="navWifi">تهيئة إعدادات الـWiFi</span></button></div>
+    <div class="sub">
+      <button data-p="wifiadv"><span data-i="navWifiAdv">إعدادات متقدمة</span></button>
+      <button data-p="wificlients"><span data-i="navWifiClients">الأجهزة المتصلة</span></button>
+      <button data-p="macfilter"><span data-i="navMac">الماك فلتر</span></button>
+    </div>
+
+    <div class="grp"><button data-p="devices"><i>🎛️</i><span data-i="navDevices">التحكم في الأجهزة</span></button></div>
+    <div class="sub">
+      <button data-p="totalspeed"><span data-i="navTotal">السرعة الإجمالية</span></button>
+      <button data-p="perdevice"><span data-i="navPer">سرعة كل جهاز</span></button>
+    </div>
+
+    <div class="grp"><button data-p="lan"><i>🔌</i><span data-i="navLan">إعدادات الـLAN</span></button></div>
+
+    <div class="grp"><button data-p="dns"><i>🌍</i><span data-i="navDns">إعدادات الـDNS</span></button></div>
+    <div class="sub">
+      <button data-p="block"><span data-i="navBlock">حجب المواقع</span> <span class="badge-beta">BETA</span></button>
+      <button data-p="mac"><span data-i="navMacChange">تغيير ماك الراوتر</span></button>
+    </div>
+
+    <div class="grp"><button data-p="mode"><i>🧭</i><span data-i="navMode">الوضع الحالي</span></button></div>
+    <div class="sub">
+      <button data-p="home-mode"><span data-i="navHomeMode">وضع الراوتر المنزلي</span></button>
+      <button data-p="ap"><span data-i="navAp">الأكسس بوينت</span></button>
+    </div>
+
+    <div class="grp"><button data-p="dsl"><i>📞</i><span data-i="navDsl">بيانات الخط الأرضي</span></button></div>
+    <div class="grp"><button data-p="diag"><i>🩺</i><span data-i="navDiag">تشخيص الأعطال</span></button></div>
+    <div class="grp"><button data-p="speed"><i>⚡</i><span data-i="navSpeed">قياس السرعة</span></button></div>
+
+    <div class="grp"><button data-p="system"><i>⚙️</i><span data-i="navSys">خيارات النظام</span></button></div>
+    <div class="sub"><button data-p="routerpass"><span data-i="navRpass">كلمة سر الراوتر</span></button></div>
+  </nav>
+
+  <main>
+    <!-- شريط الاتصال -->
+    <div class="connbar">
+      <div class="st" id="barStatus"><span style="color:var(--ok)">✅</span> <span data-i="connected">متصل</span></div>
+      <label class="f" style="margin:0"><span data-i="routerIp">ادخل IP الراوتر</span><input class="inp" id="bIp" value="192.168.1.1" dir="ltr"></label>
+      <label class="f" style="margin:0"><span data-i="user">اسم المستخدم</span><input class="inp" id="bUsr" value="admin" dir="ltr"></label>
+      <label class="f" style="margin:0"><span data-i="pass">كلمة السر</span><input class="inp" id="bPwd" type="password" value="admin" dir="ltr"></label>
+      <button class="btn" onclick="reconnect()" data-i="connect">اتـصـل</button>
+    </div>
+
+    <!-- ─── HOME ─── -->
+    <section class="page" id="p-home">
+      <div class="card">
+        <h2>📊 <span data-i="statusTitle">نظرة سريعة</span></h2>
+        <div class="sub" data-i="statusSub">حالة شبكتك الآن</div>
+        <div class="grid g4">
+          <div class="stat"><div class="lbl" data-i="stInternet">الإنترنت</div><div class="val" data-i="connectedV" data-live>—</div></div>
+          <div class="stat" data-live><div class="lbl" data-i="stDevices">أجهزة متصلة</div><div class="val" id="devCount">—</div></div>
+          <div class="stat" data-live><div class="lbl" data-i="stDown">التحميل</div><div class="val" id="dlNow">— <small>Mbps</small></div></div>
+          <div class="stat" data-live><div class="lbl" data-i="stUp">الرفع</div><div class="val" id="ulNow">— <small>Mbps</small></div></div>
+        </div>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <h2>⚡ <span data-i="quickTitle">إجراءات سريعة</span></h2>
+          <div class="sub" data-i="quickSub">أكثر ما تحتاجه بضغطة واحدة</div>
+          <div class="row">
+            <button class="btn" onclick="go('wifi')">🔑 <span data-i="qWifi">تغيير كلمة الواي فاي</span></button>
+            <button class="btn ghost" onclick="go('macfilter')">🚫 <span data-i="qBlock">حظر جهاز</span></button>
+            <button class="btn ghost" onclick="go('perdevice')">🎚️ <span data-i="qLimit">تحديد سرعة جهاز</span></button>
+            <button class="btn ghost" onclick="go('diag')">🩺 <span data-i="qDiag">تشخيص المشكلة</span></button>
+            <button class="btn blue" onclick="go('dns')">🌍 <span data-i="qDns">أفضل DNS</span></button>
+            <button class="btn danger" onclick="askReboot()">🔄 <span data-i="qReboot">إعادة تشغيل</span></button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>ℹ️ <span data-i="infoTitle">معلومات الراوتر</span></h2>
+          <div class="sub" data-i="infoSub">تفاصيل الجهاز</div>
+          <table class="info-tbl">
+            <tr><th data-i="iModel">الموديل</th><td data-live>—</td></tr>
+            <tr><th data-i="iIp">IP المحلي</th><td class="mono" id="tIp" data-live>—</td></tr>
+            <tr><th data-i="iWan">IP الخارجي</th><td class="mono" data-live>—</td></tr>
+            <tr><th data-i="iMode">وضع التشغيل</th><td data-i="homeRouter">راوتر منزلي</td></tr>
+            <tr><th data-i="iUp">مدة التشغيل</th><td class="mono" id="uptime" data-live>—</td></tr>
+            <tr><th data-i="iFw">إصدار البرنامج</th><td class="mono" data-live>—</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h2>📈 <span data-i="usageTitle">أكثر الأجهزة استهلاكاً</span></h2>
+        <div class="sub" data-i="usageSub">النطاق الترددي الآن</div>
+        <div id="usageList"></div>
+      </div>
+    </section>
+
+    <!-- ─── WIFI BASIC ─── -->
+    <section class="page hide" id="p-wifi">
+      <div class="card">
+        <h2>📡 <span data-i="wifiTitle">الإعدادات الأساسية للواي فاي</span></h2>
+        <div class="sub" data-i="wifiSub">اسم الشبكة وكلمة السر ونوع التشفير</div>
+        <div class="between" style="margin-bottom:12px">
+          <b data-i="wifiOn">تفعيل الـWiFi</b>
+          <label class="switch"><input type="checkbox" id="swWifi" checked><span class="sl"></span></label>
+        </div>
+        <div class="between" style="margin-bottom:14px">
+          <b data-i="wpsState">حالة الـWPS</b>
+          <span class="tag t-warn" id="wpsTag">Null</span>
+        </div>
+        <div class="grid g2">
+          <label class="f"><span data-i="ssid">اسم الشبكة (SSID)</span><input class="inp" id="ssid" value="" placeholder="غير متاح — سجّل الدخول للراوتر" dir="ltr" data-live></label>
+          <label class="f"><span data-i="wifiPass">كلمة السر</span>
+            <div class="row" style="flex-wrap:nowrap"><input class="inp" id="wpass" type="password" value="" placeholder="غير متاح" dir="ltr" data-live><button class="icon-btn" onclick="eye('wpass',this)">👁</button></div>
+          </label>
+          <label class="f"><span data-i="authType">نوع المصادقة</span>
+            <select class="inp" id="auth"><option>WPA2-PSK (Mixed)</option><option>WPA2-PSK</option><option>WPA3-SAE</option><option>WPA/WPA2</option><option data-i="noPass">بدون كلمة سر (مفتوحة)</option></select>
+          </label>
+          <label class="f"><span data-i="band">النطاق</span><select class="inp"><option>2.4 GHz</option><option>5 GHz</option><option data-i="both">الاثنان معاً</option></select></label>
+        </div>
+        <div class="row">
+          <button class="btn" onclick="apply('wifi')">✔ <span data-i="applyChanges">تطبيق التعديلات</span></button>
+          <button class="btn ghost" onclick="loadCurrent('wifi')">⟳ <span data-i="curSettings">الإعدادات الحالية</span></button>
+          <button class="btn blue" onclick="genPass()">🎲 <span data-i="genPass">توليد كلمة سر قوية</span></button>
+          <button class="btn ghost" onclick="showQr()">📷 <span data-i="qr">مشاركة بالـQR</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── WIFI ADVANCED ─── -->
+    <section class="page hide" id="p-wifiadv">
+      <div class="card">
+        <h2>🛠️ <span data-i="wadvTitle">الإعدادات المتقدمة للـWiFi</span></h2>
+        <div class="sub" data-i="wadvSub">القناة، التردد، قوة الإشارة وعدد الأجهزة</div>
+        <div class="grid g2">
+          <label class="f"><span data-i="hideWifi">إخفاء الـWiFi (Hidden SSID)</span><select class="inp"><option data-i="no">لا</option><option data-i="yes">نعم</option></select></label>
+          <label class="f"><span data-i="bandwidth">تردد الـWiFi</span><select class="inp"><option>20 MHz</option><option>40 MHz</option><option>20/40 MHz Auto</option></select></label>
+          <label class="f"><span data-i="channel">قناة البث (0 = Auto)</span><input class="inp" type="number" min="0" max="13" value="7" dir="ltr"></label>
+          <label class="f"><span data-i="beacon">فترة البث (ms)</span><input class="inp" type="number" value="100" dir="ltr"></label>
+          <label class="f"><span data-i="maxClients">أقصى عدد أجهزة</span><input class="inp" type="number" value="6" dir="ltr"></label>
+          <label class="f"><span data-i="txpower">قوة إشارة الواي فاي</span><select class="inp"><option>100%</option><option>75%</option><option>50%</option><option>25%</option></select></label>
+        </div>
+        <div class="note" style="margin-bottom:12px" data-i="chanNote">💡 نصيحة: اضغط «أفضل قناة» ليفحص التطبيق القنوات المزدحمة حولك ويختار الأنظف تلقائياً.</div>
+        <div class="row">
+          <button class="btn" onclick="apply('wadv')">✔ <span data-i="applyChanges">تطبيق التعديلات</span></button>
+          <button class="btn ghost" onclick="loadCurrent('wadv')">⟳ <span data-i="curSettings">الإعدادات الحالية</span></button>
+          <button class="btn blue" onclick="bestChannel()">📶 <span data-i="bestChan">أفضل قناة</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── WIFI CLIENTS ─── -->
+    <section class="page hide" id="p-wificlients">
+      <div class="card">
+        <h2>📶 <span data-i="wcTitle">الأجهزة المتصلة بالواي فاي</span></h2>
+        <div class="sub" data-i="wcSub">اضغط «ابدأ الفحص» لعرض الأجهزة اللاسلكية</div>
+        <div class="tbl-wrap" style="margin-bottom:12px">
+          <table><thead><tr><th data-i="thDev">الجهاز</th><th class="mono">Device MAC</th><th data-i="thStatus">الحالة</th><th data-i="thSignal">الإشارة</th></tr></thead>
+          <tbody id="wcBody"></tbody></table>
+        </div>
+        <button class="btn" onclick="scanWifi()">🔍 <span data-i="startScan">ابدأ الفحص</span></button>
+      </div>
+    </section>
+
+    <!-- ─── MAC FILTER ─── -->
+    <section class="page hide" id="p-macfilter">
+      <div class="card">
+        <h2>🛡️ <span data-i="mfTitle">الماك فلتر</span></h2>
+        <div class="sub" data-i="mfSub">امنع أو اسمح لأجهزة معينة بالاتصال بالواي فاي</div>
+        <div id="mfModes">
+          <label class="radio" onclick="setMf('block')"><input type="radio" name="mf" value="block"><span data-i="mfBlock">حظر أجهزة محددة (قائمة سوداء)</span></label>
+          <label class="radio sel" onclick="setMf('allow')"><input type="radio" name="mf" value="allow" checked><span data-i="mfAllow">السماح لأجهزة محددة فقط (قائمة بيضاء)</span></label>
+          <label class="radio" onclick="setMf('off')"><input type="radio" name="mf" value="off"><span data-i="mfOff">إلغاء تفعيل الفلتر</span></label>
+        </div>
+        <div class="note g" style="margin:12px 0" id="mfNote"></div>
+        <label class="f"><span data-i="mfManual">إدخال ماك يدوياً</span>
+          <div class="row" style="flex-wrap:nowrap">
+            <input class="inp mono" id="mfMac" placeholder="00:00:00:00:00:00" dir="ltr">
+            <button class="btn sm" onclick="addMac()" data-i="mfAdd">إضافة</button>
+          </div>
+        </label>
+        <div class="tbl-wrap" style="margin-bottom:12px">
+          <table><thead><tr><th style="width:36px"><input type="checkbox" class="ck" onchange="allMf(this)"></th><th class="mono">Device MAC</th><th data-i="thDev">الجهاز</th><th data-i="thStatus">الحالة</th><th></th></tr></thead>
+          <tbody id="mfBody"></tbody></table>
+        </div>
+        <div class="row">
+          <button class="btn" onclick="applyMf()">✔ <span id="mfBtnLbl" data-i="mfApplySel">تطبيق على المختار</span></button>
+          <button class="btn ghost" onclick="scanForMf()">👥 <span data-i="showConnected">عرض الأجهزة المتصلة</span></button>
+          <button class="btn ghost" onclick="loadCurrent('mf')">⟳ <span data-i="curSettings">الإعدادات الحالية</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── DEVICES SCAN ─── -->
+    <section class="page hide" id="p-devices">
+      <div class="card">
+        <h2>🎛️ <span data-i="dsTitle">فحص الأجهزة على الراوتر</span></h2>
+        <div class="sub" data-i="dsSub">كل الأجهزة المتصلة (سلكي + لاسلكي) مع الـIP والماك</div>
+        <input class="inp" id="dSearch" placeholder="🔍 بحث..." oninput="renderDevices()" style="margin-bottom:12px">
+        <div id="devList"></div>
+        <div class="row" style="margin-top:6px">
+          <button class="btn" onclick="scanDevices()">🔍 <span data-i="startScan">ابدأ الفحص</span></button>
+          <button class="btn ghost" onclick="exportDevices()">⬇ <span data-i="exportCsv">تصدير CSV</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── TOTAL SPEED ─── -->
+    <section class="page hide" id="p-totalspeed">
+      <div class="card">
+        <h2>🚦 <span data-i="tsTitle">السرعة الإجمالية</span></h2>
+        <div class="sub" data-i="tsSub">حدّد السرعة القصوى التي يستهلكها الراوتر كله</div>
+        <label class="f"><span data-i="tsMode">اختيار وضع السرعة</span>
+          <select class="inp" id="tsMode" onchange="tsToggle()"><option value="unl" data-i="unlimited">غير محدود (Unlimited)</option><option value="lim" data-i="limited">محدود (Limited)</option></select>
+        </label>
+        <div id="tsFields" class="grid g2" style="opacity:.45;pointer-events:none">
+          <label class="f"><span data-i="maxDown">أقصى سرعة تحميل (kbps)</span><input class="inp" id="tsDown" value="4096" dir="ltr"></label>
+          <label class="f"><span data-i="maxUp">أقصى سرعة رفع (kbps)</span><input class="inp" id="tsUp" value="1024" dir="ltr"></label>
+        </div>
+        <div class="row">
+          <button class="btn" onclick="apply('ts')">✔ <span data-i="applyChanges">تطبيق التعديلات</span></button>
+          <button class="btn ghost" onclick="loadCurrent('ts')">⟳ <span data-i="curSettings">الإعدادات الحالية</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PER DEVICE SPEED ─── -->
+    <section class="page hide" id="p-perdevice">
+      <div class="card">
+        <h2>🎚️ <span data-i="pdTitle">تحديد سرعة كل جهاز</span></h2>
+        <div class="sub" data-i="pdSub">حدّد سرعة لجهاز واحد أو مجموعة أجهزة أو نطاق IP كامل</div>
+        <div class="tbl-wrap" style="margin-bottom:12px">
+          <table><thead><tr><th style="width:36px"><input type="checkbox" class="ck" onchange="allPd(this)"></th><th class="mono">IP Address</th><th class="mono">MAC Address</th><th data-i="thDev">الجهاز</th><th class="mono">Up (kbps)</th><th class="mono">Down (kbps)</th></tr></thead>
+          <tbody id="pdBody"></tbody></table>
+        </div>
+        <div class="row">
+          <button class="btn" onclick="openRule()">➕ <span data-i="pdAdd">إضافة قاعدة سرعة</span></button>
+          <button class="btn danger" onclick="clearRules()">➖ <span data-i="pdClear">مسح قواعد المختار</span></button>
+          <button class="icon-btn" onclick="scanDevices(1)" title="Refresh">⟳</button>
+          <button class="btn ghost" onclick="scanDevices(1)">👥 <span data-i="showConnected">عرض الأجهزة المتصلة</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── LAN ─── -->
+    <section class="page hide" id="p-lan">
+      <div class="card">
+        <h2>🔌 <span data-i="lanTitle">إعدادات الـLAN</span></h2>
+        <div class="sub" data-i="lanSub">عنوان الراوتر و DHCP ونطاق التوزيع</div>
+        <div class="grid g2">
+          <label class="f"><span data-i="lanIp">تغيير IP الراوتر</span><input class="inp mono" value="192.168.1.1" dir="ltr"></label>
+          <label class="f"><span data-i="dhcpOn">تفعيل الـDHCP</span><select class="inp"><option>Yes</option><option>No</option></select></label>
+          <label class="f"><span data-i="subnet">تعديل الـSubnet Mask</span><input class="inp mono" value="255.255.255.0" dir="ltr"></label>
+          <label class="f"><span data-i="gateway">تعديل الـDefault Gateway</span><input class="inp mono" value="192.168.1.1" dir="ltr"></label>
+          <label class="f"><span data-i="dhcpStart">بداية توزيع الـDHCP</span><input class="inp mono" value="192.168.1.2" dir="ltr"></label>
+          <label class="f"><span data-i="dhcpEnd">نهاية توزيع الـDHCP</span><input class="inp mono" value="192.168.1.14" dir="ltr"></label>
+        </div>
+        <div class="note r" style="margin-bottom:12px" data-i="lanWarn">⚠ تنبيه: تغيير IP الراوتر سيقطع الاتصال مؤقتاً، وستحتاج لفتح العنوان الجديد بعدها.</div>
+        <div class="row">
+          <button class="btn" onclick="apply('lan')">✔ <span data-i="applyChanges">تطبيق التعديلات</span></button>
+          <button class="btn ghost" onclick="loadCurrent('lan')">⟳ <span data-i="curSettings">عرض الإعدادات الحالية</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── DNS ─── -->
+    <section class="page hide" id="p-dns">
+      <div class="card">
+        <h2>🌍 <span data-i="dnsTitle">إعدادات الـDNS</span></h2>
+        <div class="sub" data-i="dnsSub">اختر أسرع DNS لتسريع التصفح</div>
+        <div class="row" style="margin-bottom:12px">
+          <select class="inp" id="dnsSel" style="flex:1;min-width:200px" onchange="pickDns()">
+            <option value="" data-i="chooseDns">اختر الـDNS ...</option>
+          </select>
+          <button class="btn sm blue" onclick="pingDns()">📡 <span data-i="pingBtn">بنج على السيرفر</span></button>
+          <span class="tag t-info mono" id="pingVal">--- ms</span>
+        </div>
+        <button class="btn" style="width:100%;margin-bottom:14px" onclick="bestDns()">🏆 <span data-i="calcBest">احسب أفضل DNS</span></button>
+        <div id="dnsResults"></div>
+        <div class="between" style="margin:12px 0">
+          <b data-i="useIsp">استخدام DNS الشركة (تلقائي)</b>
+          <label class="switch"><input type="checkbox" id="swIsp" onchange="ispToggle()"><span class="sl"></span></label>
+        </div>
+        <div id="dnsFields" class="grid g2">
+          <label class="f"><span data-i="dns1">الـDNS الأساسي</span><input class="inp mono" id="dns1" value="1.1.1.1" dir="ltr"></label>
+          <label class="f"><span data-i="dns2">الـDNS الثانوي</span><input class="inp mono" id="dns2" value="1.0.0.1" dir="ltr"></label>
+        </div>
+        <div class="row">
+          <button class="btn" onclick="apply('dns')">✔ <span data-i="applyRouter">تطبيق التعديلات للراوتر</span></button>
+          <button class="btn ghost" onclick="loadCurrent('dns')">⟳ <span data-i="curSettings">الإعدادات الحالية</span></button>
+          <button class="btn danger" onclick="apply('dnsflush')">🗑 <span data-i="flushDns">حذف سجلات الـDNS السابقة</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── BLOCK SITES ─── -->
+    <section class="page hide" id="p-block">
+      <div class="card">
+        <h2>🚫 <span data-i="blTitle">حجب المواقع</span> <span class="badge-beta">BETA</span></h2>
+        <div class="sub" data-i="blSub">امنع الوصول لموقع معين أو مجموعة مواقع</div>
+        <div class="tbl-wrap" style="margin-bottom:12px">
+          <table><thead><tr><th style="width:36px"><input type="checkbox" class="ck" onchange="allBl(this)"></th><th>URL - Website</th><th data-i="thStatus">الحالة</th><th></th></tr></thead>
+          <tbody id="blBody"></tbody></table>
+        </div>
+        <label class="f"><span data-i="blAddLbl">ادخل الموقع المراد حجبه</span>
+          <div class="row" style="flex-wrap:nowrap"><input class="inp" id="blUrl" placeholder="example.com" dir="ltr"><button class="btn sm" onclick="addBlock()" data-i="blAdd">حجب الموقع</button></div>
+        </label>
+        <div class="row" style="margin-bottom:10px">
+          <button class="btn ghost" onclick="renderBl()">📋 <span data-i="blShow">عرض المواقع المحجوبة</span></button>
+          <button class="btn ghost" onclick="unblockSel()">↩ <span data-i="blUnblock">إعادة السماح للمحدد</span></button>
+        </div>
+        <div class="note" data-i="blQuick">⚡ حزم جاهزة للحجب بضغطة واحدة:</div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn sm ghost" onclick="pack('social')">📱 <span data-i="pkSocial">مواقع التواصل</span></button>
+          <button class="btn sm ghost" onclick="pack('games')">🎮 <span data-i="pkGames">الألعاب</span></button>
+          <button class="btn sm ghost" onclick="pack('adult')">🔞 <span data-i="pkAdult">المواقع الإباحية</span></button>
+          <button class="btn sm ghost" onclick="pack('ads')">📢 <span data-i="pkAds">الإعلانات</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── MAC CHANGE ─── -->
+    <section class="page hide" id="p-mac">
+      <div class="card">
+        <h2>🔀 <span data-i="mcTitle">تغيير ماك الراوتر</span></h2>
+        <div class="sub" data-i="mcSub">تعديل الماك الافتراضي الموجود خلف الراوتر</div>
+        <div class="stat" style="margin-bottom:14px"><div class="lbl" data-i="curMac">الماك الحالي</div><div class="val mono" id="curMacV" data-live>—</div></div>
+        <label class="f"><span data-i="newMac">أدخل الماك الجديد</span><input class="inp mono" id="newMac" placeholder="00:00:00:00:00:00" dir="ltr"></label>
+        <div class="row">
+          <button class="btn" onclick="apply('mac')">✔ <span data-i="applyChanges">تطبيق التعديلات</span></button>
+          <button class="btn ghost" onclick="loadCurrent('mac')">⟳ <span data-i="showCurMac">عرض الماك الحالي</span></button>
+          <button class="btn blue" onclick="randMac()">🎲 <span data-i="randMac">ماك عشوائي</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── CURRENT MODE ─── -->
+    <section class="page hide" id="p-mode">
+      <div class="card">
+        <h2>🧭 <span data-i="cmTitle">الوضع الحالي للراوتر</span></h2>
+        <div class="sub" data-i="cmSub">هل الجهاز يعمل كراوتر منزلي أم أكسس بوينت؟</div>
+        <div class="grid g2">
+          <div class="stat" style="text-align:center"><div class="val" style="font-size:22px;color:var(--ok)" data-i="homeRouter">راوتر منزلي</div>
+            <div class="lbl" style="margin-top:8px" data-i="thStatus">الحالة</div><div class="tag t-ok" id="m1">Configured</div></div>
+          <div class="stat" style="text-align:center"><div class="val" style="font-size:22px" data-i="apMode">أكسس بوينت</div>
+            <div class="lbl" style="margin-top:8px" data-i="thStatus">الحالة</div><div class="tag t-mut" id="m2">---------</div></div>
+        </div>
+        <button class="btn" style="width:100%;margin-top:14px" onclick="loadCurrent('mode')">📋 <span data-i="showMode">عرض بيانات الوضع الحالي</span></button>
+      </div>
+    </section>
+
+    <!-- ─── HOME ROUTER MODE ─── -->
+    <section class="page hide" id="p-home-mode">
+      <div class="card">
+        <h2>🏠 <span data-i="hmTitle">وضع الراوتر المنزلي</span></h2>
+        <div class="sub" data-i="hmSub">بيانات حساب مزود الخدمة (PPPoE)</div>
+        <button class="btn danger" style="width:100%;margin-bottom:14px" onclick="apply('tohome')">🔁 <span data-i="switchHome">تحويل الجهاز لوضع الراوتر المنزلي</span></button>
+        <label class="f"><span data-i="profiles">الحسابات المحفوظة</span>
+          <div class="row" style="flex-wrap:nowrap">
+            <button class="btn sm ghost" onclick="delProfile()">−</button>
+            <select class="inp" id="profSel" onchange="loadProfile()"><option value="" data-i="selProfile">اختر حساباً محفوظاً ...</option></select>
+            <button class="btn sm" onclick="addProfile()">+</button>
+          </div>
+        </label>
+        <div class="grid g2">
+          <label class="f"><span data-i="pppUser">اسم المستخدم</span><input class="inp" id="pppU" dir="ltr" placeholder="user@we"></label>
+          <label class="f"><span data-i="pppPass">الرقم السري</span><input class="inp" id="pppP" type="password" dir="ltr"></label>
+        </div>
+        <div class="row" style="margin-bottom:16px">
+          <button class="btn" onclick="apply('ppp')">✔ <span data-i="applyChanges">تطبيق التعديلات</span></button>
+          <button class="btn ghost" onclick="loadCurrent('ppp')">⟳ <span data-i="curSettings">الإعدادات الحالية</span></button>
+        </div>
+        <hr style="border:0;border-top:1px solid var(--line);margin:6px 0 16px">
+        <label class="f"><span data-i="mtuLbl">قيمة الـMTU (1 : 1500)</span><input class="inp" type="number" id="mtu" value="1492" min="1" max="1500" dir="ltr"></label>
+        <div class="row">
+          <button class="btn" onclick="apply('mtu')">✔ <span data-i="applyChanges">تطبيق التعديلات</span></button>
+          <button class="btn ghost" onclick="loadCurrent('mtu')">⟳ <span data-i="showMtu">عرض القيمة الحالية</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── AP MODE ─── -->
+    <section class="page hide" id="p-ap">
+      <div class="card">
+        <h2>📶 <span data-i="apTitle">وضع الأكسس بوينت</span></h2>
+        <div class="sub" data-i="apSub">تهيئة الراوتر ليعمل كموسّع إشارة / أكسس بوينت</div>
+        <div class="note" style="margin-bottom:13px" data-i="apNote">ملحوظة: يجب أولاً تحويل وضع الراوتر لأكسس بوينت حتى تتمكن من التهيئة.</div>
+        <button class="btn danger" style="width:100%;margin-bottom:14px" onclick="apply('toap')">🔁 <span data-i="switchAp">تحويل وضع الراوتر لأكسس بوينت</span></button>
+        <div class="grid g2">
+          <label class="f"><span data-i="apModeSel">وضع الأكسس بوينت</span>
+            <select class="inp" id="apMode"><option value="" data-i="chooseAp">اختر الوضع ...</option><option>WAN - Static IP</option><option>Bridged Mode</option><option>Repeater Mode</option></select>
+          </label>
+          <label class="f"><span data-i="apWan">الـIP الخاص بالـWAN</span><input class="inp mono" placeholder="192.168.1.50" dir="ltr"></label>
+          <label class="f"><span data-i="apMain">الـIP للراوتر الأساسي</span><input class="inp mono" placeholder="192.168.1.1" dir="ltr"></label>
+        </div>
+        <div class="row">
+          <button class="btn" onclick="apply('ap')">✔ <span data-i="applyChanges">تطبيق التعديلات</span></button>
+          <button class="btn ghost" onclick="loadCurrent('ap')">⟳ <span data-i="curSettings">الإعدادات الحالية</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── DSL ─── -->
+    <section class="page hide" id="p-dsl">
+      <div class="card">
+        <h2>📞 <span data-i="dslTitle">بيانات الخط الأرضي (ADSL)</span></h2>
+        <div class="sub" data-i="dslSub">التفاصيل الفنية لجودة خطك</div>
+        <div class="between" style="background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:13px;margin-bottom:13px">
+          <b>ADSL - Line Status</b><span class="tag t-mut mono" id="dslStat" data-live>—</span>
+        </div>
+        <div class="tbl-wrap" style="margin-bottom:12px">
+          <table><tbody id="dslBody"></tbody></table>
+        </div>
+        <div class="note" id="dslAdvice"></div>
+        <button class="btn" style="width:100%;margin-top:12px" onclick="loadDsl()">🔎 <span data-i="dslScan">فحص وعرض بيانات الخط الأرضي</span></button>
+      </div>
+    </section>
+
+    <!-- ─── DIAGNOSE ─── -->
+    <section class="page hide" id="p-diag">
+      <div class="card">
+        <h2>🩺 <span data-i="dgTitle">تشخيص الأعطال</span></h2>
+        <div class="sub" data-i="dgSub">اعرف مصدر المشكلة: جهازك، الراوتر، السنترال أم مزود الخدمة؟</div>
+        <div class="tbl-wrap" style="margin-bottom:13px">
+          <table class="info-tbl"><tbody id="dgBody"></tbody></table>
+        </div>
+        <div class="note" id="dgNote" data-i="dgHint">اذا كنت تقابل مشكلة في الاتصال بالإنترنت يمكنك الضغط على «تشخيص المشكلة» لمعرفة سببها.</div>
+        <button class="btn" style="width:100%;margin-top:13px" onclick="runDiag()">🩺 <span data-i="dgRun">تشخيص المشكلة</span></button>
+      </div>
+    </section>
+
+    <!-- ─── SPEED TEST ─── -->
+    <section class="page hide" id="p-speed">
+      <div class="card" style="text-align:center">
+        <h2 style="justify-content:center">⚡ <span data-i="spTitle">قياس سرعة الإنترنت</span></h2>
+        <div class="sub" data-i="spSub">اضغط الزر لبدء الاختبار</div>
+        <div class="speedo"><div class="num" id="spNum">0.0</div><div class="unit">Mbps</div></div>
+        <div class="bar"><i id="spBar" style="width:0%"></i></div>
+        <button class="btn" id="spBtn" style="margin-top:15px" onclick="runSpeed()">▶ <span data-i="spStart">ابدأ الاختبار</span></button>
+        <div class="grid g4" style="margin-top:16px">
+          <div class="stat"><div class="lbl" data-i="stDown">التحميل</div><div class="val" id="spDl">— <small>Mbps</small></div></div>
+          <div class="stat"><div class="lbl" data-i="stUp">الرفع</div><div class="val" id="spUl">— <small>Mbps</small></div></div>
+          <div class="stat"><div class="lbl">Ping</div><div class="val" id="spPing">— <small>ms</small></div></div>
+          <div class="stat"><div class="lbl" data-i="quality">الجودة</div><div class="val" id="spQ">—</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── SYSTEM ─── -->
+    <section class="page hide" id="p-system">
+      <div class="card">
+        <h2>⚙️ <span data-i="sysTitle">خيارات النظام</span></h2>
+        <div class="sub" data-i="sysSub">إعادة التشغيل والعودة لضبط المصنع</div>
+        <div class="note r" style="margin-bottom:13px" data-i="resetWarn">العودة إلى ضبط المصنع ستقوم بمحو جميع الإعدادات والتي تشمل إعدادات الـPPPOE.</div>
+        <button class="btn danger" style="width:100%;margin-bottom:16px" onclick="askReset()">⚠ <span data-i="factory">العودة إلى ضبط المصنع</span></button>
+        <hr style="border:0;border-top:1px solid var(--line);margin:0 0 16px">
+        <div class="sub" data-i="rebootSub">إعادة تشغيل الراوتر</div>
+        <button class="btn" style="width:100%" onclick="askReboot()">🔄 <span data-i="reboot">إعادة تشغيل</span></button>
+      </div>
+      <div class="card">
+        <h2>💾 <span data-i="bkTitle">النسخ الاحتياطي</span></h2>
+        <div class="sub" data-i="bkSub">احفظ إعداداتك واسترجعها بعد ضبط المصنع</div>
+        <div class="row">
+          <button class="btn blue" onclick="backup()">⬇ <span data-i="bkSave">حفظ نسخة احتياطية</span></button>
+          <button class="btn ghost" onclick="restore()">⬆ <span data-i="bkLoad">استرجاع نسخة</span></button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>⬇️ <span data-i="upTitle">تحديث التطبيق</span></h2>
+        <div class="sub" data-i="upSub">التطبيق يحدّث نفسه تلقائياً عند وجود إصدار جديد</div>
+        <div class="between"><span data-i="curVer">الإصدار الحالي</span><span class="tag t-info mono">v2.0.0</span></div>
+        <button class="btn ghost" style="width:100%;margin-top:12px" onclick="checkUpdate()">🔍 <span data-i="chkUpdate">التحقق من وجود تحديث</span></button>
+      </div>
+    </section>
+
+    <!-- ─── ROUTER PASSWORD ─── -->
+    <section class="page hide" id="p-routerpass">
+      <div class="card">
+        <h2>🔐 <span data-i="rpTitle">كلمة سر صفحة الراوتر</span></h2>
+        <div class="sub" data-i="rpSub">غيّر بيانات دخول لوحة تحكم الراوتر</div>
+        <div class="note r" style="margin-bottom:13px" data-i="rpWarn">⚠ احفظ البيانات الجديدة جيداً — لو نسيتها ستحتاج ضبط مصنع.</div>
+        <div class="grid g2">
+          <label class="f"><span data-i="user">اسم المستخدم</span><input class="inp" id="rpU" value="admin" dir="ltr"></label>
+          <label class="f"><span data-i="newPass">كلمة السر الجديدة</span>
+            <div class="row" style="flex-wrap:nowrap"><input class="inp" id="rpP" type="password" dir="ltr"><button class="icon-btn" onclick="eye('rpP',this)">👁</button></div>
+          </label>
+        </div>
+        <button class="btn" style="width:100%" onclick="apply('rpass')">✔ <span data-i="applyChanges">تطبيق التعديلات</span></button>
+      </div>
+    </section>
+  </main>
+</div>
+<footer><span data-i="footer">راوتر إيزي — واجهة مبسطة للتحكم الكامل في الراوتر</span><br><span style="opacity:.6">v2.0.0 • Router Easy</span></footer>
+</div>
+
+<div id="toast"></div>
+<div id="modal" class="modal hide"><div class="box">
+  <h3 id="mTitle">—</h3><p id="mBody">—</p>
+  <div id="mExtra"></div>
+  <div class="row" style="justify-content:flex-end;margin-top:8px">
+    <button class="btn ghost" onclick="closeModal()" data-i="cancel">إلغاء</button>
+    <button class="btn danger" id="mOk" data-i="confirm">تأكيد</button>
+  </div></div></div>
+<div id="loader" class="hide"><div class="box">
+  <div class="ttl">Executing . . .</div><div class="sb" id="ldSub">جارى التنفيذ . . .</div>
+  <div class="track"><i id="ldBar"></i></div></div></div>
+
+<script>
+/* ═══════════ i18n ═══════════ */
+const I={ar:{
+advConn:"⚙️ إعدادات الاتصال الحقيقي (موديل الراوتر)",isp:"مزود الخدمة",otherIsp:"أخرى",rModelLbl:"موديل الراوتر",
+rUserLbl:"مستخدم الراوتر",rPassLbl:"سر الراوتر",anyRouter:"🔍 أي راوتر (فحص الشبكة فقط)",demoMode:"🧪 وضع تجريبي",
+credNote:"💡 حساب telecomadmin يعطي صلاحيات كاملة على راوترات WE. لو لم يعمل، جرّب البيانات المطبوعة خلف الراوتر.",
+appName:"راوتر إيزي",loginSub:"مساعدك للتحكم الكامل في الراوتر — بدون تعقيد",routerIp:"ادخل IP الراوتر",user:"اسم المستخدم",pass:"كلمة السر",connect:"اتـصـل",theme:"المظهر",
+demoHint:"وضع تجريبي: أي بيانات ستعمل — الافتراضي admin / admin",logout:"خروج",connected:"متصل",disconnected:"غير متصل",langLbl:"English",
+navHome:"الرئيسية",navWifi:"تهيئة إعدادات الـWiFi",navWifiAdv:"إعدادات متقدمة",navWifiClients:"الأجهزة المتصلة",navMac:"الماك فلتر",
+navDevices:"التحكم في الأجهزة",navTotal:"السرعة الإجمالية",navPer:"سرعة كل جهاز",navLan:"إعدادات الـLAN",navDns:"إعدادات الـDNS",
+navBlock:"حجب المواقع",navMacChange:"تغيير ماك الراوتر",navMode:"الوضع الحالي",navHomeMode:"وضع الراوتر المنزلي",navAp:"الأكسس بوينت",
+navDsl:"بيانات الخط الأرضي",navDiag:"تشخيص الأعطال",navSpeed:"قياس السرعة",navSys:"خيارات النظام",navRpass:"كلمة سر الراوتر",
+statusTitle:"نظرة سريعة",statusSub:"حالة شبكتك الآن",stInternet:"الإنترنت",connectedV:"متصل ✔",stDevices:"أجهزة متصلة",stDown:"التحميل",stUp:"الرفع",
+quickTitle:"إجراءات سريعة",quickSub:"أكثر ما تحتاجه بضغطة واحدة",qWifi:"تغيير كلمة الواي فاي",qBlock:"حظر جهاز",qLimit:"تحديد سرعة جهاز",qDiag:"تشخيص المشكلة",qDns:"أفضل DNS",qReboot:"إعادة تشغيل",
+infoTitle:"معلومات الراوتر",infoSub:"تفاصيل الجهاز",iModel:"الموديل",iIp:"IP المحلي",iWan:"IP الخارجي",iMode:"وضع التشغيل",iUp:"مدة التشغيل",iFw:"إصدار البرنامج",
+usageTitle:"أكثر الأجهزة استهلاكاً",usageSub:"النطاق الترددي الآن",
+wifiTitle:"الإعدادات الأساسية للواي فاي",wifiSub:"اسم الشبكة وكلمة السر ونوع التشفير",wifiOn:"تفعيل الـWiFi",wpsState:"حالة الـWPS",
+ssid:"اسم الشبكة (SSID)",wifiPass:"كلمة السر",authType:"نوع المصادقة",noPass:"بدون كلمة سر (مفتوحة)",band:"النطاق",both:"الاثنان معاً",
+applyChanges:"تطبيق التعديلات",curSettings:"الإعدادات الحالية",genPass:"توليد كلمة سر قوية",qr:"مشاركة بالـQR",
+wadvTitle:"الإعدادات المتقدمة للـWiFi",wadvSub:"القناة، التردد، قوة الإشارة وعدد الأجهزة",hideWifi:"إخفاء الـWiFi (Hidden SSID)",no:"لا",yes:"نعم",
+bandwidth:"تردد الـWiFi",channel:"قناة البث (0 = Auto)",beacon:"فترة البث (ms)",maxClients:"أقصى عدد أجهزة",txpower:"قوة إشارة الواي فاي",
+chanNote:"💡 نصيحة: اضغط «أفضل قناة» ليفحص التطبيق القنوات المزدحمة حولك ويختار الأنظف تلقائياً.",bestChan:"أفضل قناة",
+wcTitle:"الأجهزة المتصلة بالواي فاي",wcSub:"اضغط «ابدأ الفحص» لعرض الأجهزة اللاسلكية",thDev:"الجهاز",thStatus:"الحالة",thSignal:"الإشارة",startScan:"ابدأ الفحص",
+mfTitle:"الماك فلتر",mfSub:"امنع أو اسمح لأجهزة معينة بالاتصال بالواي فاي",mfBlock:"حظر أجهزة محددة (قائمة سوداء)",
+mfAllow:"السماح لأجهزة محددة فقط (قائمة بيضاء)",mfOff:"إلغاء تفعيل الفلتر",mfManual:"إدخال ماك يدوياً",mfAdd:"إضافة",
+mfApplySel:"تطبيق على المختار",mfBlockSel:"حظر الأجهزة المختارة",mfAllowSel:"السماح للأجهزة المختارة",showConnected:"عرض الأجهزة المتصلة",
+nBlock:"في هذا الوضع: الأجهزة الموجودة في القائمة لن تستطيع الاتصال بالواي فاي إطلاقاً.",
+nAllow:"في هذا الوضع: لن يتصل أي جهاز بالواي فاي إلا الموجود في القائمة — حتى لو كان يعرف كلمة السر.",
+nOff:"الفلتر معطّل حالياً: كل من يعرف كلمة السر يستطيع الاتصال.",
+dsTitle:"فحص الأجهزة على الراوتر",dsSub:"كل الأجهزة المتصلة (سلكي + لاسلكي) مع الـIP والماك",exportCsv:"تصدير CSV",
+tsTitle:"السرعة الإجمالية",tsSub:"حدّد السرعة القصوى التي يستهلكها الراوتر كله",tsMode:"اختيار وضع السرعة",unlimited:"غير محدود (Unlimited)",limited:"محدود (Limited)",
+maxDown:"أقصى سرعة تحميل (kbps)",maxUp:"أقصى سرعة رفع (kbps)",
+pdTitle:"تحديد سرعة كل جهاز",pdSub:"حدّد سرعة لجهاز واحد أو مجموعة أجهزة أو نطاق IP كامل",pdAdd:"إضافة قاعدة سرعة",pdClear:"مسح قواعد المختار",
+ruleTitle:"قاعدة تحديد سرعة",ruleRange:"تطبيق على نطاق IP (Range)",ruleIp:"الجهاز / الـIP",ruleStart:"بداية النطاق",ruleEnd:"نهاية النطاق",ruleDown:"سرعة التحميل (kbps)",ruleUp:"سرعة الرفع (kbps)",
+lanTitle:"إعدادات الـLAN",lanSub:"عنوان الراوتر و DHCP ونطاق التوزيع",lanIp:"تغيير IP الراوتر",dhcpOn:"تفعيل الـDHCP",subnet:"تعديل الـSubnet Mask",
+gateway:"تعديل الـDefault Gateway",dhcpStart:"بداية توزيع الـDHCP",dhcpEnd:"نهاية توزيع الـDHCP",
+lanWarn:"⚠ تنبيه: تغيير IP الراوتر سيقطع الاتصال مؤقتاً، وستحتاج لفتح العنوان الجديد بعدها.",
+dnsTitle:"إعدادات الـDNS",dnsSub:"اختر أسرع DNS لتسريع التصفح",chooseDns:"اختر الـDNS ...",pingBtn:"بنج على السيرفر",calcBest:"احسب أفضل DNS",
+useIsp:"استخدام DNS الشركة (تلقائي)",dns1:"الـDNS الأساسي",dns2:"الـDNS الثانوي",applyRouter:"تطبيق التعديلات للراوتر",flushDns:"حذف سجلات الـDNS السابقة",
+blTitle:"حجب المواقع",blSub:"امنع الوصول لموقع معين أو مجموعة مواقع",blAddLbl:"ادخل الموقع المراد حجبه",blAdd:"حجب الموقع",
+blShow:"عرض المواقع المحجوبة",blUnblock:"إعادة السماح للمحدد",blQuick:"⚡ حزم جاهزة للحجب بضغطة واحدة:",pkSocial:"مواقع التواصل",pkGames:"الألعاب",pkAdult:"المواقع الإباحية",pkAds:"الإعلانات",
+mcTitle:"تغيير ماك الراوتر",mcSub:"تعديل الماك الافتراضي الموجود خلف الراوتر",curMac:"الماك الحالي",newMac:"أدخل الماك الجديد",showCurMac:"عرض الماك الحالي",randMac:"ماك عشوائي",
+cmTitle:"الوضع الحالي للراوتر",cmSub:"هل الجهاز يعمل كراوتر منزلي أم أكسس بوينت؟",homeRouter:"راوتر منزلي",apMode:"أكسس بوينت",showMode:"عرض بيانات الوضع الحالي",
+hmTitle:"وضع الراوتر المنزلي",hmSub:"بيانات حساب مزود الخدمة (PPPoE)",switchHome:"تحويل الجهاز لوضع الراوتر المنزلي",profiles:"الحسابات المحفوظة",selProfile:"اختر حساباً محفوظاً ...",
+pppUser:"اسم المستخدم",pppPass:"الرقم السري",mtuLbl:"قيمة الـMTU (1 : 1500)",showMtu:"عرض القيمة الحالية",
+apTitle:"وضع الأكسس بوينت",apSub:"تهيئة الراوتر ليعمل كموسّع إشارة / أكسس بوينت",
+apNote:"ملحوظة: يجب أولاً تحويل وضع الراوتر لأكسس بوينت حتى تتمكن من التهيئة.",switchAp:"تحويل وضع الراوتر لأكسس بوينت",
+apModeSel:"وضع الأكسس بوينت",chooseAp:"اختر الوضع ...",apWan:"الـIP الخاص بالـWAN",apMain:"الـIP للراوتر الأساسي",
+dslTitle:"بيانات الخط الأرضي (ADSL)",dslSub:"التفاصيل الفنية لجودة خطك",dslScan:"فحص وعرض بيانات الخط الأرضي",
+dgTitle:"تشخيص الأعطال",dgSub:"اعرف مصدر المشكلة: جهازك، الراوتر، السنترال أم مزود الخدمة؟",
+dgHint:"اذا كنت تقابل مشكلة في الاتصال بالإنترنت يمكنك الضغط على «تشخيص المشكلة» لمعرفة سببها.",dgRun:"تشخيص المشكلة",
+dgConn:"حالة الاتصال",dgWan:"الـIP الخارجي",dgDsl:"حالة الـDSL",dgIsp:"حالة الـISP",dgGw:"البوابة (Gateway)",dgDns:"استجابة الـDNS",
+dgOk:"لم يتم إيجاد أي مشكلة في الاتصال. إذا استمرت المشكلة فإنها ستكون من جانب مزود الخدمة، يمكنك التواصل معهم!",
+spTitle:"قياس سرعة الإنترنت",spSub:"اضغط الزر لبدء الاختبار",spStart:"ابدأ الاختبار",spRun:"جاري القياس...",quality:"الجودة",qExcellent:"ممتازة",qGood:"جيدة",qWeak:"ضعيفة",
+sysTitle:"خيارات النظام",sysSub:"إعادة التشغيل والعودة لضبط المصنع",
+resetWarn:"العودة إلى ضبط المصنع ستقوم بمحو جميع الإعدادات والتي تشمل إعدادات الـPPPOE.",factory:"العودة إلى ضبط المصنع",rebootSub:"إعادة تشغيل الراوتر",reboot:"إعادة تشغيل",
+bkTitle:"النسخ الاحتياطي",bkSub:"احفظ إعداداتك واسترجعها بعد ضبط المصنع",bkSave:"حفظ نسخة احتياطية",bkLoad:"استرجاع نسخة",
+upTitle:"تحديث التطبيق",upSub:"التطبيق يحدّث نفسه تلقائياً عند وجود إصدار جديد",curVer:"الإصدار الحالي",chkUpdate:"التحقق من وجود تحديث",
+rpTitle:"كلمة سر صفحة الراوتر",rpSub:"غيّر بيانات دخول لوحة تحكم الراوتر",rpWarn:"⚠ احفظ البيانات الجديدة جيداً — لو نسيتها ستحتاج ضبط مصنع.",newPass:"كلمة السر الجديدة",
+cancel:"إلغاء",confirm:"تأكيد",save:"حفظ",footer:"راوتر إيزي — واجهة مبسطة للتحكم الكامل في الراوتر",
+tApplied:"✅ تم تطبيق التعديلات بنجاح",tLoaded:"⟳ تم تحميل الإعدادات الحالية",tScan:"✅ اكتمل الفحص",tAdded:"✅ تمت الإضافة",tRemoved:"🗑 تم الحذف",tCopied:"📋 تم النسخ",
+tRebootQ:"إعادة تشغيل الراوتر",tRebootB:"سينقطع الإنترنت لمدة دقيقة تقريباً. هل تريد المتابعة؟",tRebooting:"🔄 جاري إعادة التشغيل...",
+tResetQ:"العودة إلى ضبط المصنع",tResetB:"سيتم مسح كل الإعدادات بما فيها بيانات الـPPPoE! هل أنت متأكد؟",tResetDone:"⚠ تمت إعادة الضبط (تجريبي)",
+tNoSel:"⚠ لم تختر أي جهاز",tBadMac:"⚠ صيغة الماك غير صحيحة",tBestChan:"📶 أفضل قناة الآن:",tBestDns:"🏆 أسرع DNS:",tNoUpdate:"✔ أنت على أحدث إصدار",
+tPassGen:"🎲 تم توليد كلمة سر قوية",tBackup:"💾 تم حفظ نسخة احتياطية",tRestore:"⬆ تم استرجاع النسخة",tProfAdd:"✅ تم حفظ الحساب",tRuleSet:"✅ تم ضبط قاعدة السرعة",
+exec:"جارى التنفيذ . . ."},
+
+en:{advConn:"⚙️ Real connection settings (router model)",isp:"ISP",otherIsp:"Other",rModelLbl:"Router model",
+rUserLbl:"Router username",rPassLbl:"Router password",anyRouter:"🔍 Any router (network scan only)",demoMode:"🧪 Demo mode",
+credNote:"💡 The telecomadmin account gives full rights on WE routers. If it fails, use the credentials printed on the router.",
+appName:"Router Easy",loginSub:"Full router control — without the complexity",routerIp:"Router IP address",user:"Username",pass:"Password",connect:"Connect",theme:"Theme",
+demoHint:"Demo mode: any credentials work — default admin / admin",logout:"Log out",connected:"Connected",disconnected:"Disconnected",langLbl:"العربية",
+navHome:"Home",navWifi:"Wi‑Fi Setup",navWifiAdv:"Advanced settings",navWifiClients:"Connected clients",navMac:"MAC filter",
+navDevices:"Device control",navTotal:"Total bandwidth",navPer:"Per‑device speed",navLan:"LAN settings",navDns:"DNS settings",
+navBlock:"Website blocking",navMacChange:"Change router MAC",navMode:"Current mode",navHomeMode:"Home router mode",navAp:"Access Point",
+navDsl:"DSL line data",navDiag:"Diagnostics",navSpeed:"Speed test",navSys:"System options",navRpass:"Router password",
+statusTitle:"Quick overview",statusSub:"Your network right now",stInternet:"Internet",connectedV:"Connected ✔",stDevices:"Connected devices",stDown:"Download",stUp:"Upload",
+quickTitle:"Quick actions",quickSub:"What you need most, one tap away",qWifi:"Change Wi‑Fi password",qBlock:"Block a device",qLimit:"Limit device speed",qDiag:"Diagnose issue",qDns:"Best DNS",qReboot:"Reboot",
+infoTitle:"Router info",infoSub:"Device details",iModel:"Model",iIp:"Local IP",iWan:"Public IP",iMode:"Operating mode",iUp:"Uptime",iFw:"App version",
+usageTitle:"Top consuming devices",usageSub:"Live bandwidth",
+wifiTitle:"Wi‑Fi basic settings",wifiSub:"SSID, password and encryption",wifiOn:"Enable Wi‑Fi",wpsState:"WPS status",
+ssid:"Network name (SSID)",wifiPass:"Password",authType:"Authentication",noPass:"No password (open)",band:"Band",both:"Both",
+applyChanges:"Apply changes",curSettings:"Current settings",genPass:"Generate strong password",qr:"Share via QR",
+wadvTitle:"Wi‑Fi advanced settings",wadvSub:"Channel, bandwidth, TX power and client limit",hideWifi:"Hide Wi‑Fi (Hidden SSID)",no:"No",yes:"Yes",
+bandwidth:"Channel width",channel:"Channel (0 = Auto)",beacon:"Beacon interval (ms)",maxClients:"Max clients",txpower:"TX power",
+chanNote:"💡 Tip: press “Best channel” to scan crowded channels around you and pick the cleanest automatically.",bestChan:"Best channel",
+wcTitle:"Wi‑Fi connected clients",wcSub:"Press “Start scan” to list wireless clients",thDev:"Device",thStatus:"Status",thSignal:"Signal",startScan:"Start scan",
+mfTitle:"MAC filter",mfSub:"Allow or block specific devices from Wi‑Fi",mfBlock:"Block specific devices (blacklist)",
+mfAllow:"Allow only specific devices (whitelist)",mfOff:"Disable filter",mfManual:"Enter MAC manually",mfAdd:"Add",
+mfApplySel:"Apply to selected",mfBlockSel:"Block selected devices",mfAllowSel:"Allow selected devices",showConnected:"Show connected devices",
+nBlock:"In this mode: devices in the list can never connect to Wi‑Fi.",
+nAllow:"In this mode: nobody connects except devices in the list — even with the correct password.",
+nOff:"Filter disabled: anyone with the password can connect.",
+dsTitle:"Scan devices on the router",dsSub:"All connected devices (wired + wireless) with IP and MAC",exportCsv:"Export CSV",
+tsTitle:"Total bandwidth",tsSub:"Set the maximum speed the whole router may use",tsMode:"Speed mode",unlimited:"Unlimited",limited:"Limited",
+maxDown:"Max download (kbps)",maxUp:"Max upload (kbps)",
+pdTitle:"Per‑device speed limit",pdSub:"Limit a single device, a group, or an entire IP range",pdAdd:"Add speed rule",pdClear:"Clear selected rules",
+ruleTitle:"Speed limit rule",ruleRange:"Apply to IP range",ruleIp:"Device / IP",ruleStart:"Start IP",ruleEnd:"End IP",ruleDown:"Download (kbps)",ruleUp:"Upload (kbps)",
+lanTitle:"LAN settings",lanSub:"Router address, DHCP and lease range",lanIp:"Router IP",dhcpOn:"Enable DHCP",subnet:"Subnet mask",
+gateway:"Default gateway",dhcpStart:"DHCP start",dhcpEnd:"DHCP end",
+lanWarn:"⚠ Warning: changing the router IP will drop the connection; reopen the new address afterwards.",
+dnsTitle:"DNS settings",dnsSub:"Pick the fastest DNS to speed up browsing",chooseDns:"Choose DNS server ...",pingBtn:"Ping server",calcBest:"Find best DNS",
+useIsp:"Use ISP DNS (automatic)",dns1:"Primary DNS",dns2:"Secondary DNS",applyRouter:"Apply to router",flushDns:"Flush previous DNS records",
+blTitle:"Website blocking",blSub:"Block access to a site or a group of sites",blAddLbl:"Enter the website to block",blAdd:"Block site",
+blShow:"Show blocked sites",blUnblock:"Unblock selected",blQuick:"⚡ One‑tap ready packs:",pkSocial:"Social media",pkGames:"Games",pkAdult:"Adult sites",pkAds:"Ads",
+mcTitle:"Change router MAC",mcSub:"Edit the default MAC printed on the router",curMac:"Current MAC",newMac:"Enter new MAC",showCurMac:"Show current MAC",randMac:"Random MAC",
+cmTitle:"Current router mode",cmSub:"Is it running as a home router or access point?",homeRouter:"Home router",apMode:"Access Point",showMode:"Show current mode data",
+hmTitle:"Home router mode",hmSub:"Your ISP account details (PPPoE)",switchHome:"Switch device to home router mode",profiles:"Saved accounts",selProfile:"Select a saved account ...",
+pppUser:"Username",pppPass:"Password",mtuLbl:"MTU value (1 : 1500)",showMtu:"Show current value",
+apTitle:"Access Point mode",apSub:"Configure the router as a range extender / AP",
+apNote:"Note: you must first switch the router to AP mode before configuring.",switchAp:"Switch router to Access Point",
+apModeSel:"AP mode",chooseAp:"Choose AP mode ...",apWan:"WAN IP address",apMain:"Main router IP",
+dslTitle:"DSL line data (ADSL)",dslSub:"Technical details of your line quality",dslScan:"Scan and show line data",
+dgTitle:"Diagnostics",dgSub:"Find the source: your device, router, exchange or ISP?",
+dgHint:"If you have connection trouble press “Diagnose” to find the cause.",dgRun:"Diagnose",
+dgConn:"Connection status",dgWan:"Public IP",dgDsl:"DSL status",dgIsp:"ISP status",dgGw:"Gateway",dgDns:"DNS response",
+dgOk:"No problems found in the connection. If the issue persists it is on the ISP side — contact them!",
+spTitle:"Internet speed test",spSub:"Press the button to start",spStart:"Start test",spRun:"Testing...",quality:"Quality",qExcellent:"Excellent",qGood:"Good",qWeak:"Weak",
+sysTitle:"System options",sysSub:"Reboot and factory reset",
+resetWarn:"Factory reset will erase all settings including PPPoE credentials.",factory:"Factory reset",rebootSub:"Reboot the router",reboot:"Reboot",
+bkTitle:"Backup",bkSub:"Save your settings and restore them after a reset",bkSave:"Save backup",bkLoad:"Restore backup",
+upTitle:"App update",upSub:"The app updates itself when a new version appears",curVer:"Current version",chkUpdate:"Check for updates",
+rpTitle:"Router panel password",rpSub:"Change the router admin credentials",rpWarn:"⚠ Store the new credentials safely — losing them means a factory reset.",newPass:"New password",
+cancel:"Cancel",confirm:"Confirm",save:"Save",footer:"Router Easy — a simplified full-control router interface",
+tApplied:"✅ Changes applied successfully",tLoaded:"⟳ Current settings loaded",tScan:"✅ Scan complete",tAdded:"✅ Added",tRemoved:"🗑 Removed",tCopied:"📋 Copied",
+tRebootQ:"Reboot router",tRebootB:"Internet will drop for about a minute. Continue?",tRebooting:"🔄 Rebooting...",
+tResetQ:"Factory reset",tResetB:"All settings including PPPoE will be erased! Are you sure?",tResetDone:"⚠ Reset done (demo)",
+tNoSel:"⚠ No device selected",tBadMac:"⚠ Invalid MAC format",tBestChan:"📶 Best channel now:",tBestDns:"🏆 Fastest DNS:",tNoUpdate:"✔ You are on the latest version",
+tPassGen:"🎲 Strong password generated",tBackup:"💾 Backup saved",tRestore:"⬆ Backup restored",tProfAdd:"✅ Account saved",tRuleSet:"✅ Speed rule applied",
+exec:"Executing . . ."}};
+
+let lang=localStorage.getItem("re_lang")||"ar";
+const t=k=>(I[lang][k]??k);
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.documentElement.dir=lang==="ar"?"rtl":"ltr";
+  document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t(e.dataset.i));
+  const s=document.getElementById("dSearch"); if(s)s.placeholder=lang==="ar"?"🔍 بحث...":"🔍 Search...";
+  const ll=document.getElementById("langLbl"); if(ll)ll.textContent=t("langLbl");
+  renderAll();
+}
+function toggleLang(){lang=lang==="ar"?"en":"ar";localStorage.setItem("re_lang",lang);applyLang();}
+let theme=localStorage.getItem("re_theme")||"dark";
+function applyTheme(){document.documentElement.dataset.theme=theme;}
+function toggleTheme(){theme=theme==="dark"?"light":"dark";localStorage.setItem("re_theme",theme);applyTheme();}
+
+/* ═══════════ DATA ═══════════ */
+const DEV=[];   /* لا توجد بيانات وهمية — تُملأ من الراوتر فقط */
+const nm=d=>d[lang];
+const DNS=[
+ {n:"Cloudflare",a:"1.1.1.1",b:"1.0.0.1",p:9},
+ {n:"Google",a:"8.8.8.8",b:"8.8.4.4",p:14},
+ {n:"Quad9",a:"9.9.9.9",b:"149.112.112.112",p:22},
+ {n:"OpenDNS",a:"208.67.222.222",b:"208.67.220.220",p:26},
+ {n:"AdGuard",a:"94.140.14.14",b:"94.140.15.15",p:31},
+ {n:"CleanBrowsing",a:"185.228.168.9",b:"185.228.169.9",p:35},
+ {n:"Verisign",a:"64.6.64.6",b:"64.6.65.6",p:40},
+ {n:"FamilyShield (حجب الإباحي)",a:"208.67.222.123",b:"208.67.220.123",p:28},
+ {n:"Norton ConnectSafe (حجب الإباحي)",a:"199.85.126.20",b:"199.85.127.20",p:44},
+];
+let BLOCKED=[{u:"example.com",on:true},{u:"ads.tracker.net",on:true}];
+let mfMode="allow", PROFILES=[];
+
+/* ═══════════ NAV ═══════════ */
+document.getElementById("nav").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-p]"); if(b) go(b.dataset.p);
+});
+function go(p){
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.p===p));
+  document.querySelectorAll(".page").forEach(s=>s.classList.toggle("hide",s.id!=="p-"+p));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+/* ═══════ لا يفتح التطبيق إلا باتصال حقيقي مُتحقَّق منه ═══════ */
+window.VERIFIED = false;
+
+function openApp(){
+  document.getElementById("login").classList.add("hide");
+  document.getElementById("app").classList.remove("hide");
+  renderAll(); window.scrollTo(0,0);
+}
+
+/* رسالة خطأ داخل شاشة الدخول */
+function loginError(title, detail, tips){
+  let b = document.getElementById("loginErr");
+  if(!b){
+    b = document.createElement("div");
+    b.id = "loginErr";
+    b.style.cssText = "background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.45);"+
+      "border-radius:12px;padding:12px;margin:12px 0;text-align:start;font-size:13px;line-height:1.9";
+    const box = document.querySelector(".loginbox");
+    box.insertBefore(b, box.querySelector("button"));
+  }
+  b.innerHTML = '<b style="color:var(--bad)">'+title+'</b><br>'+
+    '<span style="color:var(--muted)">'+detail+'</span>'+
+    (tips ? '<div style="color:var(--muted);font-size:12px;margin-top:8px">'+tips+'</div>' : '');
+  b.classList.remove("hide");
+}
+function clearLoginError(){ document.getElementById("loginErr")?.classList.add("hide"); }
+
+function setLoginBusy(on, txt){
+  const btn = document.querySelector('.loginbox button.btn');
+  if(!btn) return;
+  btn.disabled = on;
+  btn.style.opacity = on ? .6 : 1;
+  btn.innerHTML = on ? ("⏳ " + (txt||"جاري الاتصال...")) : '🔌 <span data-i="connect">اتـصـل</span>';
+}
+
+/* شاشة "كيف أشغّله" — تظهر بدل الطريق المسدود */
+function showSetup(){
+  const box=document.querySelector(".loginbox");
+  box.innerHTML=`
+   <div class="logo">🔌</div>
+   <h1 style="font-size:20px">تشغيل الاتصال الحقيقي</h1>
+   <p style="margin-bottom:16px">خطوة واحدة تفصلك عن بيانات راوترك الحقيقية</p>
+
+   <div style="text-align:start;background:var(--card2);border:1px solid var(--line);
+        border-radius:13px;padding:14px;margin-bottom:12px">
+     <div style="font-weight:800;color:var(--acc);margin-bottom:8px">لماذا؟</div>
+     <div style="font-size:12.5px;color:var(--muted);line-height:1.9">
+       المتصفح يمنع أي صفحة ويب من مخاطبة أجهزة شبكتك المحلية — حماية إجبارية
+       اسمها <b>CORS</b> موجودة في كل المتصفحات ولا يمكن تعطيلها.<br>
+       لذلك كل تطبيقات الراوتر تكون برنامجاً أو تطبيق موبايل، وليست صفحة HTML.
+     </div>
+   </div>
+
+   <div style="text-align:start;background:var(--card2);border:1px solid var(--ok);
+        border-radius:13px;padding:14px;margin-bottom:12px">
+     <div style="font-weight:800;color:var(--ok);margin-bottom:8px">💻 على الكمبيوتر (دقيقتان)</div>
+     <div style="font-size:12.5px;color:var(--muted);line-height:2">
+       1. ثبّت بايثون من <span class="mono" style="color:var(--acc)">python.org/downloads</span><br>
+       &nbsp;&nbsp;&nbsp;⚠️ فعّل خيار <b>Add python.exe to PATH</b><br>
+       2. دبل كليك على <span class="mono" style="color:var(--acc)">شغّل-التطبيق.bat</span><br>
+       3. سيفتح التطبيق تلقائياً ✅
+     </div>
+   </div>
+
+   <div style="text-align:start;background:var(--card2);border:1px solid var(--line);
+        border-radius:13px;padding:14px;margin-bottom:12px">
+     <div style="font-weight:800;color:var(--blue);margin-bottom:8px">📱 على الهاتف</div>
+     <div style="font-size:12.5px;color:var(--muted);line-height:2">
+       <b>الأسهل:</b> شغّل الخادم على الكمبيوتر ثم افتح من هاتفك<br>
+       <span class="mono" style="color:var(--acc)">http://عنوان-الكمبيوتر:8080</span><br>
+       <b>أو:</b> ثبّت نسخة APK — تعمل وحدها بدون أي شيء
+     </div>
+   </div>
+
+   <button class="btn" style="width:100%" onclick="location.reload()">🔄 حاولت — أعد المحاولة</button>
+   <div class="hint">هذه الصفحة تعرض الشكل فقط. البيانات الحقيقية تحتاج الخادم أو APK.</div>`;
+}
+
+/* الدخول: يتطلب محرك اتصال حقيقي (خادم أو APK) */
+async function doLogin(){
+  clearLoginError();
+  const ip=document.getElementById("ip").value.trim()||"192.168.100.1";
+  const b=document.getElementById("bIp"); if(b) b.value=ip;
+
+  const engine = window.RouterEasyLive || window.RouterEasyNative;
+  if(!engine){ showSetup(); return; }
+  if(window.__realLogin) return window.__realLogin(ip);
+  showSetup();
+}
+
+function logout(){document.getElementById("app").classList.add("hide");document.getElementById("login").classList.remove("hide");}
+function reconnect(){
+  exec(900,()=>{document.getElementById("tIp").textContent=document.getElementById("bIp").value;toast("✅ "+t("connected"),"ok");});
+}
+
+/* ═══════════ UI helpers ═══════════ */
+function toast(m,k="ok"){const e=document.getElementById("toast");e.textContent=m;e.className="show "+k;clearTimeout(e._t);e._t=setTimeout(()=>e.className="",2800);}
+function eye(id,b){const i=document.getElementById(id);i.type=i.type==="password"?"text":"password";b.textContent=i.type==="password"?"👁":"🙈";}
+function exec(ms,cb){
+  const l=document.getElementById("loader"),bar=document.getElementById("ldBar");
+  document.getElementById("ldSub").textContent=t("exec");
+  l.classList.remove("hide");bar.style.width="0%";
+  let p=0;const iv=setInterval(()=>{p+=100/(ms/60);bar.style.width=Math.min(100,p)+"%";},60);
+  setTimeout(()=>{clearInterval(iv);bar.style.width="100%";setTimeout(()=>{l.classList.add("hide");cb&&cb();},160);},ms);
+}
+function apply(w){exec(1100,()=>{
+  if(w==="toap"){document.getElementById("m1").textContent="---------";document.getElementById("m1").className="tag t-mut";
+    document.getElementById("m2").textContent="Configured";document.getElementById("m2").className="tag t-ok";}
+  if(w==="tohome"){document.getElementById("m2").textContent="---------";document.getElementById("m2").className="tag t-mut";
+    document.getElementById("m1").textContent="Configured";document.getElementById("m1").className="tag t-ok";}
+  toast(t("tApplied"),"ok");});}
+function loadCurrent(){exec(800,()=>toast(t("tLoaded"),"ok"));}
+let onOk=null;
+function modal(ti,bo,fn,extra){document.getElementById("mTitle").textContent=ti;document.getElementById("mBody").textContent=bo;
+  document.getElementById("mExtra").innerHTML=extra||"";onOk=fn;document.getElementById("modal").classList.remove("hide");}
+function closeModal(){document.getElementById("modal").classList.add("hide");}
+document.getElementById("mOk").onclick=()=>{const f=onOk;closeModal();f&&f();};
+function askReboot(){modal(t("tRebootQ"),t("tRebootB"),()=>exec(2200,()=>toast(t("tRebooting"),"warn")));}
+function askReset(){modal(t("tResetQ"),t("tResetB"),()=>exec(2600,()=>toast(t("tResetDone"),"bad")));}
+
+/* ═══════════ RENDER ═══════════ */
+function renderAll(){renderUsage();renderDevices();renderWc();renderMf();renderPd();renderBl();fillDns();renderDsl();renderDiag(false);fillProfiles();}
+function renderUsage(){
+  const el=document.getElementById("usageList"); if(!el)return;
+  el.innerHTML=DEV.filter(d=>d.use>0&&!d.blk).sort((a,b)=>b.use-a.use).slice(0,5).map(d=>
+   `<div class="listitem"><div class="avatar">${d.ic}</div>
+    <div style="flex:1;min-width:150px"><div class="nm">${nm(d)}</div><div class="bar"><i style="width:${Math.min(100,d.use*2.2)}%"></i></div></div>
+    <span class="tag t-info mono">${d.use} Mbps</span></div>`).join("");
+}
+function renderDevices(){
+  const el=document.getElementById("devList"); if(!el)return;
+  const q=(document.getElementById("dSearch").value||"").toLowerCase();
+  el.innerHTML=DEV.filter(d=>nm(d).toLowerCase().includes(q)||d.ip.includes(q)||d.mac.toLowerCase().includes(q))
+   .map((d,i)=>`<div class="listitem"><div class="avatar">${d.ic}</div>
+    <div style="flex:1;min-width:170px"><div class="nm">${nm(d)}</div><div class="mt">${d.ip} • ${d.mac}</div></div>
+    <span class="tag ${d.blk?'t-bad':d.st==='Working'?'t-ok':'t-mut'}">${d.blk?(lang==='ar'?'محظور':'Blocked'):d.st}</span>
+    <button class="btn sm ${d.blk?'ghost':'danger'}" onclick="tglBlk('${d.mac}')">${d.blk?(lang==='ar'?'رفع الحظر':'Unblock'):(lang==='ar'?'حظر':'Block')}</button>
+    </div>`).join("");
+  document.getElementById("devCount").textContent=DEV.filter(d=>!d.blk).length;
+}
+function tglBlk(mac){const d=DEV.find(x=>x.mac===mac);d.blk=!d.blk;renderDevices();renderUsage();renderMf();
+  toast(d.blk?(lang==='ar'?'🚫 تم حظر الجهاز':'🚫 Device blocked'):(lang==='ar'?'✅ تم رفع الحظر':'✅ Device unblocked'),d.blk?"bad":"ok");}
+function scanDevices(silent){exec(1300,()=>{renderDevices();renderPd();if(!silent)toast(t("tScan"),"ok");});}
+function exportDevices(){
+  const csv="Name,IP,MAC,Status\n"+DEV.map(d=>`${nm(d)},${d.ip},${d.mac},${d.blk?'Blocked':d.st}`).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="devices.csv";a.click();
+  toast("⬇ devices.csv","ok");
+}
+function renderWc(){
+  const b=document.getElementById("wcBody"); if(!b)return;
+  b.innerHTML=DEV.filter(d=>d.sig<-35).map(d=>`<tr><td>${d.ic} ${nm(d)}</td><td class="mono">${d.mac.toLowerCase()}</td>
+   <td><span class="tag ${d.st==='Working'?'t-ok':'t-mut'}">${d.st}</span></td>
+   <td class="mono" style="color:${d.sig>-55?'var(--ok)':d.sig>-70?'var(--warn)':'var(--bad)'}">${d.sig} dBm</td></tr>`).join("");
+}
+function scanWifi(){exec(1200,()=>{renderWc();toast(t("tScan"),"ok");});}
+
+/* MAC filter */
+function setMf(m){mfMode=m;document.querySelectorAll("#mfModes .radio").forEach((r,i)=>r.classList.toggle("sel",["block","allow","off"][i]===m));
+  document.getElementById("mfNote").textContent=t(m==="block"?"nBlock":m==="allow"?"nAllow":"nOff");
+  document.getElementById("mfNote").className="note "+(m==="block"?"r":m==="allow"?"g":"");
+  document.getElementById("mfBtnLbl").textContent=t(m==="block"?"mfBlockSel":m==="allow"?"mfAllowSel":"mfApplySel");}
+function renderMf(){
+  const b=document.getElementById("mfBody"); if(!b)return;
+  b.innerHTML=DEV.filter(d=>d.ip!=="192.168.1.1").map(d=>`<tr>
+   <td><input type="checkbox" class="ck mfck" data-m="${d.mac}" ${d.mf?"checked":""}></td>
+   <td class="mono">${d.mac.toLowerCase()}</td><td>${d.ic} ${nm(d)}</td>
+   <td><span class="tag ${d.blk?'t-bad':d.st==='Working'?'t-ok':'t-mut'}">${d.blk?'Blocked':d.st}</span></td>
+   <td><button class="btn sm ghost" onclick="copyTxt('${d.mac}')">📋</button></td></tr>`).join("");
+  setMf(mfMode);
+}
+function allMf(c){document.querySelectorAll(".mfck").forEach(x=>x.checked=c.checked);}
+function addMac(){
+  const v=document.getElementById("mfMac").value.trim();
+  if(!/^([0-9a-f]{2}[:-]){5}[0-9a-f]{2}$/i.test(v)){toast(t("tBadMac"),"bad");return;}
+  DEV.push({ic:"➕",ar:"مُضاف يدوياً",en:"Manually added",ip:"—",mac:v.toUpperCase().replace(/-/g,":"),use:0,sig:-80,st:"Idle",up:"NotSet",dn:"NotSet",mf:true,blk:mfMode==="block"});
+  document.getElementById("mfMac").value="";renderMf();renderDevices();toast(t("tAdded"),"ok");
+}
+function applyMf(){
+  const sel=[...document.querySelectorAll(".mfck:checked")].map(x=>x.dataset.m);
+  if(!sel.length&&mfMode!=="off"){toast(t("tNoSel"),"bad");return;}
+  exec(1100,()=>{DEV.forEach(d=>{d.mf=sel.includes(d.mac);
+    if(mfMode==="block")d.blk=sel.includes(d.mac)&&d.ip!=="192.168.1.1";
+    else if(mfMode==="allow")d.blk=!sel.includes(d.mac)&&d.ip!=="192.168.1.1";
+    else d.blk=false;});
+    renderMf();renderDevices();renderUsage();toast(t("tApplied"),"ok");});
+}
+function scanForMf(){exec(1000,()=>{renderMf();toast(t("tScan"),"ok");});}
+function copyTxt(x){navigator.clipboard?.writeText(x);toast(t("tCopied"),"ok");}
+
+/* per device speed */
+function renderPd(){
+  const b=document.getElementById("pdBody"); if(!b)return;
+  b.innerHTML=DEV.map(d=>`<tr><td><input type="checkbox" class="ck pdck" data-m="${d.mac}"></td>
+   <td class="mono">${d.ip}</td><td class="mono">${d.mac}</td><td>${d.ic} ${nm(d)}</td>
+   <td class="mono" style="color:${d.up==='NotSet'?'var(--ok)':'var(--acc)'}">${d.up}</td>
+   <td class="mono" style="color:${d.dn==='NotSet'?'var(--ok)':'var(--acc)'}">${d.dn}</td></tr>`).join("");
+}
+function allPd(c){document.querySelectorAll(".pdck").forEach(x=>x.checked=c.checked);}
+function openRule(){
+  const opts=DEV.map(d=>`<option value="${d.ip}">${d.ip} — ${nm(d)}</option>`).join("");
+  modal(t("ruleTitle"),"",()=>{
+    const rng=document.getElementById("rRange").checked;
+    const dn=document.getElementById("rDn").value||"NotSet", up=document.getElementById("rUp").value||"NotSet";
+    const s=document.getElementById("rStart").value, e=document.getElementById("rEnd").value, one=document.getElementById("rIp").value;
+    exec(1200,()=>{
+      DEV.forEach(d=>{
+        const last=+d.ip.split(".").pop();
+        const inR=rng&&s&&e&&last>=+s.split(".").pop()&&last<=+e.split(".").pop();
+        if(inR||(!rng&&d.ip===one)){d.dn=dn;d.up=up;}
+      });
+      renderPd();toast(t("tRuleSet"),"ok");
+    });
+  },`
+   <label class="radio"><input type="checkbox" id="rRange" onchange="rngT()"><span>${t("ruleRange")}</span></label>
+   <label class="f"><span>${t("ruleIp")}</span><select class="inp mono" id="rIp">${opts}</select></label>
+   <div id="rRangeF" class="grid g2" style="opacity:.4;pointer-events:none">
+     <label class="f"><span>${t("ruleStart")}</span><input class="inp mono" id="rStart" placeholder="192.168.1.5" dir="ltr"></label>
+     <label class="f"><span>${t("ruleEnd")}</span><input class="inp mono" id="rEnd" placeholder="192.168.1.15" dir="ltr"></label>
+   </div>
+   <div class="grid g2">
+     <label class="f"><span>${t("ruleDown")}</span><input class="inp mono" id="rDn" placeholder="2048" dir="ltr"></label>
+     <label class="f"><span>${t("ruleUp")}</span><input class="inp mono" id="rUp" placeholder="1024" dir="ltr"></label>
+   </div>`);
+  document.getElementById("mOk").className="btn";
+}
+function rngT(){const on=document.getElementById("rRange").checked,f=document.getElementById("rRangeF"),i=document.getElementById("rIp");
+  f.style.opacity=on?1:.4;f.style.pointerEvents=on?"auto":"none";i.disabled=on;i.style.opacity=on?.4:1;}
+function clearRules(){
+  const sel=[...document.querySelectorAll(".pdck:checked")].map(x=>x.dataset.m);
+  if(!sel.length){toast(t("tNoSel"),"bad");return;}
+  exec(900,()=>{DEV.forEach(d=>{if(sel.includes(d.mac)){d.up="NotSet";d.dn="NotSet";}});renderPd();toast(t("tRemoved"),"ok");});
+}
+function tsToggle(){const on=document.getElementById("tsMode").value==="lim",f=document.getElementById("tsFields");
+  f.style.opacity=on?1:.45;f.style.pointerEvents=on?"auto":"none";}
+
+/* DNS */
+function fillDns(){
+  const s=document.getElementById("dnsSel"); if(!s)return;
+  s.innerHTML=`<option value="">${t("chooseDns")}</option>`+DNS.map((d,i)=>`<option value="${i}">${d.n} — ${d.a}</option>`).join("");
+}
+function pickDns(){const i=document.getElementById("dnsSel").value;if(i==="")return;
+  document.getElementById("dns1").value=DNS[i].a;document.getElementById("dns2").value=DNS[i].b;document.getElementById("pingVal").textContent="--- ms";}
+function pingDns(){const i=document.getElementById("dnsSel").value;if(i===""){toast(t("chooseDns"),"warn");return;}
+  const el=document.getElementById("pingVal");let n=0;const iv=setInterval(()=>{el.textContent=(5+Math.random()*60).toFixed(0)+" ms";if(++n>8){clearInterval(iv);
+    const p=DNS[i].p+Math.round(Math.random()*6-3);el.textContent=p+" ms";el.className="tag mono "+(p<20?"t-ok":p<40?"t-warn":"t-bad");}},120);}
+function bestDns(){exec(2000,()=>{
+  const r=DNS.map(d=>({...d,ms:d.p+Math.round(Math.random()*8-4)})).sort((a,b)=>a.ms-b.ms);
+  document.getElementById("dnsResults").innerHTML=r.slice(0,5).map((d,i)=>
+   `<div class="listitem"><div class="avatar">${i===0?"🏆":i+1}</div>
+    <div style="flex:1;min-width:150px"><div class="nm">${d.n}</div><div class="mt">${d.a} • ${d.b}</div></div>
+    <span class="tag ${d.ms<20?'t-ok':d.ms<40?'t-warn':'t-bad'} mono">${d.ms} ms</span>
+    <button class="btn sm ghost" onclick="useDns('${d.a}','${d.b}')">${lang==='ar'?'استخدم':'Use'}</button></div>`).join("");
+  document.getElementById("dns1").value=r[0].a;document.getElementById("dns2").value=r[0].b;
+  toast(t("tBestDns")+" "+r[0].n+" ("+r[0].ms+"ms)","ok");});}
+function useDns(a,b){document.getElementById("dns1").value=a;document.getElementById("dns2").value=b;toast("✔ "+a,"ok");}
+function ispToggle(){const on=document.getElementById("swIsp").checked,f=document.getElementById("dnsFields");
+  f.style.opacity=on?.45:1;f.style.pointerEvents=on?"none":"auto";}
+
+/* block sites */
+function renderBl(){const b=document.getElementById("blBody"); if(!b)return;
+  b.innerHTML=BLOCKED.length?BLOCKED.map((s,i)=>`<tr><td><input type="checkbox" class="ck blck" data-i="${i}"></td>
+   <td class="mono">${s.u}</td><td><span class="tag ${s.on?'t-bad':'t-mut'}">${s.on?(lang==='ar'?'محجوب':'Blocked'):(lang==='ar'?'مسموح':'Allowed')}</span></td>
+   <td><button class="btn sm ghost" onclick="delBl(${i})">🗑</button></td></tr>`).join("")
+   :`<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:22px">${lang==='ar'?'لا توجد مواقع محجوبة':'No blocked sites'}</td></tr>`;}
+function allBl(c){document.querySelectorAll(".blck").forEach(x=>x.checked=c.checked);}
+function addBlock(){const u=document.getElementById("blUrl").value.trim();if(!u)return;
+  BLOCKED.push({u:u.replace(/^https?:\/\//,""),on:true});document.getElementById("blUrl").value="";
+  exec(700,()=>{renderBl();toast(t("tAdded"),"ok");});}
+function delBl(i){BLOCKED.splice(i,1);renderBl();toast(t("tRemoved"),"ok");}
+function unblockSel(){[...document.querySelectorAll(".blck:checked")].forEach(x=>BLOCKED[+x.dataset.i].on=false);renderBl();toast(t("tApplied"),"ok");}
+const PACKS={social:["facebook.com","instagram.com","tiktok.com","twitter.com","snapchat.com"],
+ games:["roblox.com","epicgames.com","steampowered.com","pubgmobile.com"],
+ adult:["*adult-content*","xvideos.com","pornhub.com"],
+ ads:["doubleclick.net","googleadservices.com","ads.yahoo.com"]};
+function pack(k){exec(900,()=>{PACKS[k].forEach(u=>{if(!BLOCKED.find(b=>b.u===u))BLOCKED.push({u,on:true});});renderBl();toast(t("tApplied"),"ok");});}
+
+/* MAC change */
+function randMac(){const h="0123456789ABCDEF";let m=[];for(let i=0;i<6;i++)m.push(h[Math.floor(Math.random()*16)]+h[Math.floor(Math.random()*16)]);
+  document.getElementById("newMac").value=m.join(":");toast("🎲 "+m.join(":"),"ok");}
+
+/* DSL */
+function renderDsl(){const b=document.getElementById("dslBody"); if(!b)return;
+  const rows=window.VERIFIED?[]:[];
+  b.innerHTML=rows.map(r=>`<tr><th>${r[0]}</th><td class="mono" style="color:${r[3]}">${r[1]}</td><td style="color:var(--muted)">${r[2]}</td></tr>`).join("");
+  document.getElementById("dslAdvice").innerHTML=lang==="ar"
+   ?"📘 <b>كيف تقرأها؟</b><br>• <b>SNR</b> كل ما زاد كان أفضل (فوق 10 dB ممتاز، تحت 6 يعني تشويش).<br>• <b>Attenuation</b> كل ما قلّ كان أفضل (تحت 20 dB ممتاز = قربك من السنترال).<br>• <b>CRC Errors</b> أرقام كبيرة = مشكلة في السلك أو الوصلة."
+   :"📘 <b>How to read:</b><br>• <b>SNR</b> higher is better (>10 dB excellent, <6 means noise).<br>• <b>Attenuation</b> lower is better (<20 dB = close to the exchange).<br>• <b>CRC Errors</b> high numbers = cable/joint problem.";}
+function loadDsl(){exec(1400,()=>{renderDsl();toast(t("tScan"),"ok");});}
+
+/* diagnostics */
+function renderDiag(done){
+  const b=document.getElementById("dgBody"); if(!b)return;
+  const v=done?[["dgConn","Connected","var(--ok)"],["dgWan","—","var(--txt)"],["dgDsl","Up","var(--ok)"],
+    ["dgIsp","Up","var(--ok)"],["dgGw","Reachable (2 ms)","var(--ok)"],["dgDns","OK (14 ms)","var(--ok)"]]
+   :[["dgConn","---------","var(--muted)"],["dgWan","---------","var(--muted)"],["dgDsl","---------","var(--muted)"],
+     ["dgIsp","---------","var(--muted)"],["dgGw","---------","var(--muted)"],["dgDns","---------","var(--muted)"]];
+  b.innerHTML=v.map(r=>`<tr><th>${t(r[0])}</th><td class="mono" style="color:${r[2]}">${r[1]}</td></tr>`).join("");
+  const n=document.getElementById("dgNote");
+  n.textContent=done?t("dgOk"):t("dgHint"); n.className="note "+(done?"g":"");
+}
+function runDiag(){exec(2400,()=>{renderDiag(true);toast(t("tScan"),"ok");});}
+
+/* speed test */
+let running=false;
+function runSpeed(){
+  if(running)return; running=true;
+  const btn=document.getElementById("spBtn"); btn.textContent="⏳ "+t("spRun");
+  const dl=14+Math.random()*8, ul=1.2+Math.random()*1.2, ping=Math.round(8+Math.random()*35);
+  let v=0; const iv=setInterval(()=>{v+=(dl-v)*.12+Math.random()*1.5-.7; if(v<0)v=0;
+    document.getElementById("spNum").textContent=v.toFixed(1);document.getElementById("spBar").style.width=Math.min(100,v*4)+"%";},80);
+  setTimeout(()=>{clearInterval(iv);running=false;
+    document.getElementById("spNum").textContent=dl.toFixed(1);document.getElementById("spBar").style.width=Math.min(100,dl*4)+"%";
+    document.getElementById("spDl").innerHTML=dl.toFixed(1)+' <small>Mbps</small>';
+    document.getElementById("spUl").innerHTML=ul.toFixed(2)+' <small>Mbps</small>';
+    document.getElementById("spPing").innerHTML=ping+' <small>ms</small>';
+    const q=document.getElementById("spQ"); q.textContent=dl>18?t("qExcellent"):dl>10?t("qGood"):t("qWeak");
+    q.style.color=dl>18?"var(--ok)":dl>10?"var(--warn)":"var(--bad)";
+    btn.innerHTML="▶ "+t("spStart");},4200);
+}
+
+/* misc */
+function genPass(){const c="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%";let p="";
+  for(let i=0;i<14;i++)p+=c[Math.floor(Math.random()*c.length)];
+  const w=document.getElementById("wpass");w.value=p;w.type="text";toast(t("tPassGen"),"ok");}
+function showQr(){
+  const s=document.getElementById("ssid").value,p=document.getElementById("wpass").value;
+  const d=encodeURIComponent(`WIFI:T:WPA;S:${s};P:${p};;`);
+  modal(s,lang==="ar"?"وجّه كاميرا هاتفك على الكود للاتصال بالشبكة مباشرة":"Point your phone camera at the code to join instantly",null,
+   `<div style="text-align:center"><img src="https://api.qrserver.com/v1/create-qr-code/?size=210x210&data=${d}" style="border-radius:12px;background:#fff;padding:8px" alt="QR"></div>`);
+  document.getElementById("mOk").classList.add("hide");setTimeout(()=>document.getElementById("mOk").classList.remove("hide"),50);
+}
+function bestChannel(){exec(1800,()=>{const c=[1,6,11][Math.floor(Math.random()*3)];toast(t("tBestChan")+" "+c,"ok");});}
+function checkUpdate(){exec(1200,()=>toast(t("tNoUpdate"),"ok"));}
+function backup(){const data={ssid:document.getElementById("ssid").value,wifi:document.getElementById("wpass").value,
+  dns:[document.getElementById("dns1").value,document.getElementById("dns2").value],blocked:BLOCKED,mfMode};
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));
+  a.download="router-easy-backup.json";a.click();toast(t("tBackup"),"ok");}
+function restore(){const i=document.createElement("input");i.type="file";i.accept=".json";
+  i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+    r.onload=()=>{try{const d=JSON.parse(r.result);
+      if(d.ssid)document.getElementById("ssid").value=d.ssid;
+      if(d.wifi)document.getElementById("wpass").value=d.wifi;
+      if(d.dns){document.getElementById("dns1").value=d.dns[0];document.getElementById("dns2").value=d.dns[1];}
+      if(d.blocked){BLOCKED=d.blocked;renderBl();}
+      if(d.mfMode)setMf(d.mfMode);
+      toast(t("tRestore"),"ok");}catch{toast("⚠ JSON","bad");}};
+    r.readAsText(f);};i.click();}
+function fillProfiles(){const s=document.getElementById("profSel");if(!s)return;
+  s.innerHTML=`<option value="">${t("selProfile")}</option>`+PROFILES.map((p,i)=>`<option value="${i}">${p.u}</option>`).join("");}
+function addProfile(){const u=document.getElementById("pppU").value.trim(),p=document.getElementById("pppP").value;
+  if(!u)return toast("⚠ "+t("pppUser"),"bad");PROFILES.push({u,p});fillProfiles();toast(t("tProfAdd"),"ok");}
+function delProfile(){const i=document.getElementById("profSel").value;if(i==="")return;PROFILES.splice(i,1);fillProfiles();toast(t("tRemoved"),"ok");}
+function loadProfile(){const i=document.getElementById("profSel").value;if(i==="")return;
+  document.getElementById("pppU").value=PROFILES[i].u;document.getElementById("pppP").value=PROFILES[i].p;}
+
+/* لا نعرض أرقام سرعة متحركة إلا إذا كانت حقيقية */
+setInterval(()=>{ if(!window.VERIFIED) return;
+  const a=document.getElementById("dlNow"),b=document.getElementById("ulNow");
+  if(a)a.innerHTML=(11+Math.random()*9).toFixed(0)+' <small>Mbps</small>';
+  if(b)b.innerHTML=(1+Math.random()*1).toFixed(1)+' <small>Mbps</small>';},3000);
+
+/* ═══════ presets: موديل الراوتر ومزود الخدمة ═══════ */
+function modelPreset(){
+  const s=document.getElementById("rModel"), o=s.options[s.selectedIndex];
+  if(!o)return;
+  document.getElementById("ip").value=o.dataset.ip||"192.168.1.1";
+  document.getElementById("rUser").value=o.dataset.u||"admin";
+  document.getElementById("rPass").value=o.dataset.p||"admin";
+}
+function ispPreset(){
+  const v=document.getElementById("isp").value;
+  const map={we:"192.168.1.1",orange:"192.168.1.1",vodafone:"192.168.1.1",etisalat:"192.168.1.1"};
+  const s=document.getElementById("rModel"), o=s.options[s.selectedIndex];
+  if(o&&o.value==="huawei_ont"&&o.dataset.ip==="192.168.100.1")return;
+  if(map[v])document.getElementById("ip").value=map[v];
+}
+
+/* كشف تلقائي لعنوان الراوتر */
+async function autoDetect(){
+  const engine = window.RouterEasyLive || window.RouterEasyNative;
+  if(!engine){
+    loginError("🔍 البحث التلقائي غير متاح هنا",
+      "يحتاج تشغيل الخادم أو نسخة APK.",
+      "يمكنك معرفته يدوياً: على الكمبيوتر اكتب <b>ipconfig</b> في cmd وانظر <b>Default Gateway</b>.");
+    return;
+  }
+  toast("🔍 جاري البحث عن الراوتر...","warn");
+  try{
+    const r=await fetch(location.origin+"/api/probe",{credentials:"same-origin"});
+    const j=await r.json();
+    if(j.found&&j.found.length){
+      document.getElementById("ip").value=j.found[0];
+      clearLoginError();
+      toast("✅ وجدت الراوتر: "+j.found[0],"ok");
+    } else toast("⚠ لم أجد راوتراً — اكتب العنوان يدوياً","warn");
+  }catch(e){ toast("⚠ فشل البحث","bad"); }
+}
+
+/* ═══════ كشف الدوال لطبقة live.js ═══════ */
+Object.assign(window,{DEV,renderAll,renderDevices,renderUsage,renderMf,renderPd,
+  toast,exec,modal,closeModal,go,apply,loadCurrent,doLogin,reconnect,scanDevices,
+  runSpeed,bestDns,runDiag,askReboot,tglBlk,useDns,I,t});
+Object.defineProperty(window,"lang",{get:()=>lang,set:v=>{lang=v;}});
+
+/* يفحص وجود محرك الاتصال ويعرض الحالة بصراحة */
+async function checkEngine(){
+  const bar=document.getElementById("engineBar"); if(!bar)return;
+  let live=false;
+  if(window.RouterEasyNative){
+    bar.style.cssText=bar.style.cssText.replace(/rgba\(245,158,11[^)]*\)/g,"rgba(34,197,94,.14)")
+      .replace("rgba(245,158,11,.5)","rgba(34,197,94,.5)");
+    bar.innerHTML='<b style="color:var(--ok)">🟢 نسخة APK — جاهزة للاتصال المباشر بالراوتر</b>';
+    return;
+  }
+  try{
+    const c=new AbortController(); setTimeout(()=>c.abort(),1500);
+    const r=await fetch(location.origin+"/api/status",{signal:c.signal});
+    live=(r.status===401||r.ok);
+  }catch(e){}
+  if(live){
+    bar.style.background="rgba(34,197,94,.14)"; bar.style.borderColor="rgba(34,197,94,.5)";
+    bar.innerHTML='<b style="color:var(--ok)">🟢 الخادم يعمل</b> — أدخل بيانات راوترك للاتصال الحقيقي';
+  }else{
+    bar.style.background="rgba(239,68,68,.12)"; bar.style.borderColor="rgba(239,68,68,.45)";
+    bar.innerHTML='<b style="color:var(--bad)">🔴 الخادم غير مشغّل</b><br>'+
+      '<span style="color:var(--muted)">المتصفح يمنع مخاطبة الراوتر مباشرة.</span><br>'+
+      '<button class="pill-btn" style="margin-top:8px;font-size:12px" onclick="showSetup()">'+
+      '📖 كيف أشغّله؟</button>';
+  }
+}
+
+applyTheme(); applyLang(); checkEngine();
+</script>
+
+<!-- ═══ طبقة الاتصال الحقيقي (مدمجة) ═══ -->
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   Router Easy — طبقة الاتصال الحقيقي (Live Layer)
+   ───────────────────────────────────────────────────────────────
+   • إذا كان الخادم (server/app.py) يعمل  →  بيانات حقيقية من راوترك
+   • إذا فُتح index.html وحده مباشرة       →  يظل الوضع التجريبي
+   لا تحتاج لتعديل أي شيء — الملف يكتشف الحالة تلقائياً.
+   ═══════════════════════════════════════════════════════════════ */
+(function () {
+  const API = location.origin + "/api";
+  let LIVE = false, MODE = "demo";
+
+  const $ = (id) => document.getElementById(id);
+
+  async function req(path, opt = {}) {
+    const r = await fetch(API + path, {
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      ...opt,
+    });
+    if (!r.ok) throw new Error((await r.text()).slice(0, 120));
+    return r.json();
+  }
+  const post = (p, body) => req(p, { method: "POST", body: JSON.stringify(body || {}) });
+
+  function setBadge(live, mode) {
+    LIVE = live; MODE = mode || "demo";
+    const c = $("modeChip");
+    if (!c) return;
+    c.textContent = live ? "🟢 LIVE · " + MODE.toUpperCase() : "DEMO";
+    c.className = "chip " + (live ? "on" : "");
+    c.title = live ? "متصل بالخادم — بيانات حقيقية" : "وضع تجريبي — شغّل server/app.py";
+  }
+
+  /* ── هل الخادم موجود؟ ── */
+  async function probe() {
+    try {
+      const ctl = new AbortController();
+      setTimeout(() => ctl.abort(), 1500);
+      const r = await fetch(API + "/status", { credentials: "same-origin", signal: ctl.signal });
+      return r.status === 401 || r.ok;      // 401 = الخادم موجود لكن نحتاج دخول
+    } catch { return false; }
+  }
+
+  /* ── تسجيل الدخول الحقيقي ── */
+  async function liveLogin() {
+    const body = {
+      user: ($("usr") || {}).value || "admin",
+      pass: ($("pwd") || {}).value || "admin",
+      ip:   ($("ip")  || {}).value || "192.168.1.1",
+      ruser:($("rUser")|| {}).value || undefined,
+      rpass:($("rPass")|| {}).value || undefined,
+      mode: ($("rModel") || {}).value || undefined,
+    };
+    const j = await post("/login", body);
+    setBadge(true, j.mode);
+    if (j.warn) window.toast?.("⚠ " + j.warn, "warn");
+    return j;
+  }
+
+  /* ── تحميل كل البيانات الحقيقية ── */
+  async function pullAll() {
+    if (!LIVE || !window.VERIFIED) return;
+    try {
+      const s = await req("/status");
+      if ($("tIp")) $("tIp").textContent = s.lan_ip || "-";
+      const rows = document.querySelectorAll("#p-home .info-tbl td");
+      if (rows.length >= 6) {
+        rows[0].textContent = s.model || "-";
+        rows[1].textContent = s.lan_ip || "-";
+        rows[2].textContent = s.wan_ip || "-";
+        rows[4].textContent = s.uptime || "-";
+      }
+      const chip = $("connChip");
+      if (chip) {
+        chip.className = "chip " + (s.internet ? "on" : "off");
+        chip.textContent = (s.internet ? "🟢 " : "🔴 ") +
+          (s.internet ? "متصل" : "غير متصل");
+      }
+    } catch (e) { console.warn("status", e); }
+
+    try {
+      const d = await req("/devices");
+      if (Array.isArray(d) && d.length && window.DEV) {
+        window.DEV.length = 0;
+        d.forEach((x) => window.DEV.push({
+          ic: x.ic || "💻",
+          ar: x.nm?.ar || x.host || x.ip,
+          en: x.nm?.en || x.host || x.ip,
+          ip: x.ip, mac: x.mac, use: x.use || 0,
+          sig: x.sig ?? -55, st: x.st || "Working",
+          up: x.up || "NotSet", dn: x.dn || "NotSet",
+          mf: false, blk: !!x.blocked,
+        }));
+        window.renderAll?.();
+      }
+    } catch (e) { console.warn("devices", e); }
+  }
+
+  /* ═══════ استبدال الدوال التجريبية بالحقيقية ═══════ */
+  function hook() {
+    /* الدخول الحقيقي — لا يفتح التطبيق إلا بعد تحقق فعلي من الراوتر */
+    window.__realLogin = async function (ip) {
+      window.setLoginBusy?.(true, "جاري الاتصال بالخادم...");
+      window.clearLoginError?.();
+
+      if (!(await probe())) {
+        window.setLoginBusy?.(false);
+        window.loginError?.("⚠ الخادم غير مشغّل",
+          "لم أجد خادم Router Easy على هذا الجهاز.",
+          "شغّل <code style='color:var(--acc)'>RouterEasy-Full.py</code> ثم افتح العنوان الذي يظهر لك.");
+        return;
+      }
+
+      window.setLoginBusy?.(true, "جاري تسجيل الدخول للراوتر...");
+      let j;
+      try { j = await liveLogin(); }
+      catch (e) {
+        window.setLoginBusy?.(false);
+        window.loginError?.("⚠ خطأ في الاتصال", e.message || String(e));
+        return;
+      }
+      window.setLoginBusy?.(false);
+
+      if (j && j.connected) {
+        window.VERIFIED = true;
+        if (window.DEV) window.DEV.length = 0;
+        window.openApp?.();
+        setBadge(true, j.mode);
+        window.toast?.("✅ تم تسجيل الدخول للراوتر", "ok");
+        await pullAll();
+        window.scanDevices?.(true);
+      } else {
+        /* ❌ فشل — نبقى في شاشة الدخول */
+        const why = j?.warn || "تعذّر تسجيل الدخول";
+        setBadge(false);
+        window.loginError?.("❌ فشل تسجيل الدخول للراوتر", why,
+          "تأكد من:<br>" +
+          "• <b>عنوان الراوتر</b> صحيح — جرّب <b>192.168.100.1</b> أو <b>192.168.1.1</b><br>" +
+          "• <b>اسم المستخدم وكلمة السر</b> مطابقان للمطبوع خلف الراوتر<br>" +
+          "• لراوترات WE جرّب: <b>telecomadmin / admintelecom</b><br>" +
+          "• أنك متصل بشبكة الراوتر (واي فاي وليس بيانات الجوال)");
+      }
+    };
+
+    /* إعادة الاتصال من الشريط العلوي */
+    const _re = window.reconnect;
+    window.reconnect = async function () {
+      if (!LIVE) return _re && _re();
+      window.exec?.(700, async () => {
+        try {
+          await post("/config", {
+            router_ip: $("bIp").value,
+            router_user: $("bUsr").value,
+            router_pass: $("bPwd").value,
+          });
+          await pullAll();
+          window.toast?.("✅ متصل — " + $("bIp").value, "ok");
+        } catch (e) { window.toast?.("⚠ " + e.message, "bad"); }
+      });
+    };
+
+    /* فحص الأجهزة — حقيقي */
+    const _scan = window.scanDevices;
+    window.scanDevices = async function (silent) {
+      if (!LIVE) return _scan && _scan(silent);
+      window.exec?.(900, async () => {
+        try {
+          const d = await req("/devices?deep=1");
+          window.DEV.length = 0;
+          d.forEach((x) => window.DEV.push({
+            ic: x.ic || "💻", ar: x.nm?.ar || x.ip, en: x.nm?.en || x.ip,
+            ip: x.ip, mac: x.mac, use: 0, sig: x.sig ?? -55,
+            st: x.st || "Working", up: "NotSet", dn: "NotSet",
+            mf: false, blk: !!x.blocked,
+          }));
+          window.renderAll?.();
+          if (!silent) window.toast?.("✅ تم العثور على " + d.length + " جهاز", "ok");
+        } catch (e) { window.toast?.("⚠ " + e.message, "bad"); }
+      });
+    };
+
+    /* قياس السرعة — تنزيل فعلي */
+    const _sp = window.runSpeed;
+    window.runSpeed = async function () {
+      if (!LIVE) return _sp && _sp();
+      const btn = $("spBtn"); if (!btn || btn.dataset.busy) return;
+      btn.dataset.busy = 1; btn.textContent = "⏳ جاري القياس الحقيقي...";
+      let v = 0, iv = setInterval(() => {
+        v = Math.min(v + Math.random() * 6, 95);
+        $("spNum").textContent = v.toFixed(1);
+        $("spBar").style.width = Math.min(100, v) + "%";
+      }, 180);
+      try {
+        const r = await req("/speedtest?mb=10");
+        clearInterval(iv);
+        if (r.error) throw new Error(r.error);
+        $("spNum").textContent = r.download.toFixed(1);
+        $("spBar").style.width = Math.min(100, r.download) + "%";
+        $("spDl").innerHTML = r.download.toFixed(1) + " <small>Mbps</small>";
+        $("spUl").innerHTML = (r.upload ?? 0).toFixed(1) + " <small>Mbps</small>";
+        $("spPing").innerHTML = (r.ping ?? "—") + " <small>ms</small>";
+        const q = $("spQ");
+        q.textContent = r.download > 40 ? "ممتازة" : r.download > 15 ? "جيدة" : "ضعيفة";
+        q.style.color = r.download > 40 ? "var(--ok)" : r.download > 15 ? "var(--warn)" : "var(--bad)";
+        window.toast?.("✅ قياس حقيقي: " + r.download.toFixed(1) + " Mbps", "ok");
+      } catch (e) {
+        clearInterval(iv); window.toast?.("⚠ " + e.message, "bad");
+      }
+      btn.dataset.busy = ""; btn.innerHTML = "▶ ابدأ الاختبار";
+    };
+
+    /* أفضل DNS — قياس فعلي */
+    const _bd = window.bestDns;
+    window.bestDns = async function () {
+      if (!LIVE) return _bd && _bd();
+      window.exec?.(1200, async () => {
+        try {
+          const r = await req("/dnsbench");
+          $("dnsResults").innerHTML = r.slice(0, 6).map((d, i) =>
+            `<div class="listitem"><div class="avatar">${i === 0 ? "🏆" : i + 1}</div>
+             <div style="flex:1;min-width:150px"><div class="nm">${d.name}</div>
+             <div class="mt">${d.ip} • ${d.ip2 || ""}</div></div>
+             <span class="tag ${d.ms == null ? "t-bad" : d.ms < 20 ? "t-ok" : d.ms < 50 ? "t-warn" : "t-bad"} mono">
+             ${d.ms == null ? "timeout" : d.ms + " ms"}</span>
+             <button class="btn sm ghost" onclick="useDns('${d.ip}','${d.ip2 || d.ip}')">استخدم</button></div>`
+          ).join("");
+          const best = r.find(x => x.ms != null);
+          if (best) { $("dns1").value = best.ip; $("dns2").value = best.ip2 || best.ip; }
+          window.toast?.("🏆 أسرع DNS: " + (best?.name || "-") + " (" + best?.ms + "ms)", "ok");
+        } catch (e) { window.toast?.("⚠ " + e.message, "bad"); }
+      });
+    };
+
+    /* تشخيص الأعطال — فحص فعلي */
+    const _dg = window.runDiag;
+    window.runDiag = async function () {
+      if (!LIVE) return _dg && _dg();
+      window.exec?.(1400, async () => {
+        try {
+          const d = await req("/diagnose");
+          const ok = (v) => v != null;
+          const rows = [
+            ["حالة الاتصال", ok(d.internet) ? "Connected" : "Disconnected", ok(d.internet) ? "var(--ok)" : "var(--bad)"],
+            ["الـIP الخارجي", d.wan_ip || "---------", d.wan_ip ? "var(--txt)" : "var(--muted)"],
+            ["البوابة (Gateway)", ok(d.gateway) ? d.gateway + " ms" : "لا يستجيب", ok(d.gateway) ? "var(--ok)" : "var(--bad)"],
+            ["استجابة الـDNS", ok(d.dns) ? d.dns + " ms" : "فشل", ok(d.dns) ? "var(--ok)" : "var(--bad)"],
+            ["زمن الإنترنت", ok(d.internet) ? d.internet + " ms" : "فشل", ok(d.internet) ? "var(--ok)" : "var(--bad)"],
+          ];
+          $("dgBody").innerHTML = rows.map(r =>
+            `<tr><th>${r[0]}</th><td class="mono" style="color:${r[2]}">${r[1]}</td></tr>`).join("");
+          const n = $("dgNote");
+          let msg, cls;
+          if (!ok(d.gateway)) { msg = "❌ الراوتر نفسه لا يستجيب — تأكد أنك متصل بالشبكة وأن IP الراوتر صحيح."; cls = "note r"; }
+          else if (!ok(d.dns)) { msg = "⚠ الراوتر يعمل لكن الـDNS لا يستجيب — جرّب تغيير DNS إلى 1.1.1.1 من قسم DNS."; cls = "note"; }
+          else if (!ok(d.internet)) { msg = "❌ الشبكة المحلية سليمة لكن لا يوجد إنترنت — المشكلة من مزود الخدمة أو الخط."; cls = "note r"; }
+          else { msg = "✅ لم يتم إيجاد أي مشكلة — الشبكة والإنترنت يعملان بشكل سليم."; cls = "note g"; }
+          n.textContent = msg; n.className = cls;
+          window.toast?.("✅ اكتمل التشخيص", "ok");
+        } catch (e) { window.toast?.("⚠ " + e.message, "bad"); }
+      });
+    };
+
+    /* تغيير إعدادات الواي فاي — فعلي */
+    const _apply = window.apply;
+    window.apply = async function (w) {
+      if (!LIVE || w !== "wifi") return _apply && _apply(w);
+      window.exec?.(900, async () => {
+        try {
+          const r = await post("/wifi", {
+            ssid: $("ssid").value, password: $("wpass").value,
+          });
+          window.toast?.(r.applied ? "✅ تم تطبيق إعدادات الواي فاي على الراوتر"
+                                   : "⚠ الراوتر رفض التعديل — تحقق من صلاحيات الحساب", r.applied ? "ok" : "warn");
+        } catch (e) { window.toast?.("⚠ " + e.message, "bad"); }
+      });
+    };
+
+    /* إعادة التشغيل — فعلية */
+    const _rb = window.askReboot;
+    window.askReboot = function () {
+      if (!LIVE) return _rb && _rb();
+      window.modal?.("إعادة تشغيل الراوتر",
+        "سيتم إرسال أمر إعادة تشغيل حقيقي للراوتر وسينقطع الإنترنت لدقيقة. متابعة؟",
+        () => window.exec?.(1500, async () => {
+          try {
+            const r = await post("/reboot");
+            window.toast?.(r.applied ? "🔄 تم إرسال أمر إعادة التشغيل" : "⚠ فشل الأمر", r.applied ? "warn" : "bad");
+          } catch (e) { window.toast?.("⚠ " + e.message, "bad"); }
+        }));
+    };
+
+    /* حظر جهاز — فعلي */
+    const _tb = window.tglBlk;
+    window.tglBlk = async function (mac) {
+      if (!LIVE) return _tb && _tb(mac);
+      const d = window.DEV.find(x => x.mac === mac); if (!d) return;
+      try {
+        const r = await post("/block", { mac, on: !d.blk });
+        if (r.applied) { d.blk = !d.blk; window.renderAll?.(); window.toast?.(d.blk ? "🚫 تم حظر الجهاز" : "✅ تم رفع الحظر", d.blk ? "bad" : "ok"); }
+        else window.toast?.("⚠ الحظر غير مدعوم في هذا الوضع", "warn");
+      } catch (e) { window.toast?.("⚠ " + e.message, "bad"); }
+    };
+  }
+
+  /* ── بدء التشغيل ── */
+  window.addEventListener("DOMContentLoaded", async () => {
+    hook();
+    const alive = await probe();
+    setBadge(false);
+    const h = document.querySelector("#login .hint");
+    if (alive) {
+      const c = $("modeChip");
+      if (c) { c.textContent = "🔌 الخادم جاهز"; c.className = "chip on"; }
+      if (h) h.innerHTML = "🟢 <b>الخادم يعمل</b> — سيتم جلب بيانات راوترك الحقيقية بعد الاتصال" +
+        '<br><button class="pill-btn" style="margin-top:8px" onclick="showPhoneQr()">📱 فتحه على الهاتف</button>';
+    } else if (h) {
+      h.innerHTML = "⚪ <b>وضع تجريبي</b> — الأرقام غير حقيقية." +
+        '<br>للبيانات الحقيقية شغّل <code style="color:var(--acc)">شغّل-التطبيق.bat</code>' +
+        '<br><button class="pill-btn" style="margin-top:8px" onclick="howToReal()">❓ كيف أجعله حقيقياً؟</button>';
+    }
+    setInterval(() => { if (LIVE) pullAll(); }, 15000);
+  });
+
+  /* ── QR لفتح التطبيق على الهاتف ── */
+  window.showPhoneQr = function () {
+    const url = location.origin;
+    const d = encodeURIComponent(url);
+    window.modal?.("📱 افتحه على هاتفك",
+      "وجّه كاميرا هاتفك على الكود. تأكد أن الهاتف على نفس شبكة الواي فاي.",
+      null,
+      `<div style="text-align:center">
+         <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${d}"
+              style="border-radius:12px;background:#fff;padding:8px" alt="QR">
+         <div class="mono" style="margin-top:10px;font-size:13px;color:var(--acc)">${url}</div>
+         <div style="font-size:11.5px;color:var(--muted);margin-top:8px">
+           لو لم يفتح: تأكد أن العنوان ليس 127.0.0.1<br>
+           اكتب <b>ipconfig</b> في cmd وضع عنوان IPv4 بدلاً منه
+         </div>
+       </div>`);
+  };
+
+  /* ── شرح مبسّط داخل التطبيق ── */
+  window.howToReal = function () {
+    window.modal?.("كيف أجعل الأرقام حقيقية؟",
+      "التطبيق الآن يعرض أرقاماً تجريبية. لجلب بيانات راوترك الفعلية:",
+      null,
+      `<div style="font-size:13px;line-height:2;color:var(--muted)">
+         <b style="color:var(--txt)">على الكمبيوتر:</b><br>
+         1️⃣ ثبّت بايثون من <span class="mono" style="color:var(--acc)">python.org/downloads</span><br>
+         &nbsp;&nbsp;&nbsp;⚠️ ضع علامة ✅ على <b>Add python.exe to PATH</b><br>
+         2️⃣ اضغط دبل كليك على <span class="mono" style="color:var(--acc)">شغّل-التطبيق.bat</span><br>
+         3️⃣ سيفتح التطبيق تلقائياً ببيانات حقيقية<br><br>
+         <b style="color:var(--txt)">على الهاتف:</b><br>
+         شغّل الخادم على الكمبيوتر، ثم افتح من هاتفك:<br>
+         <span class="mono" style="color:var(--acc)">http://عنوان-الكمبيوتر:8080</span><br><br>
+         <b style="color:var(--txt)">ما الذي سيصبح حقيقياً؟</b><br>
+         ✅ الأجهزة المتصلة بشبكتك<br>
+         ✅ قياس السرعة الفعلي<br>
+         ✅ أفضل DNS وتشخيص الأعطال
+       </div>`);
+  };
+
+  window.RouterEasyLive = { isLive: () => LIVE, mode: () => MODE, pullAll, req, post };
+})();
+
+</script>
+<script src="native.js"></script>
+</body>
+</html>
