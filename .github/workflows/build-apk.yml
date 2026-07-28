@@ -1,9 +1,8 @@
-name: بناء تطبيق أندرويد (APK)
+name: بناء APK
 
 on:
   push:
-    branches: [ main, master ]
-  workflow_dispatch:          # زر تشغيل يدوي من الموقع
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,59 +12,127 @@ jobs:
       - name: تحميل الملفات
         uses: actions/checkout@v4
 
+      - name: عرض محتويات المستودع
+        run: |
+          echo "=== الملفات الموجودة ==="
+          ls -la
+          echo "=== بحث عن index.html ==="
+          find . -name "index.html" -not -path "./node_modules/*" || true
+
       - name: تجهيز Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
 
-      - name: تجهيز Node
+      - name: تجهيز Node 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: تثبيت المكتبات
-        working-directory: apk
+      - name: تجهيز مجلد www
         run: |
-          npm install --no-audit --no-fund
+          set -e
+          mkdir -p www
+          # ابحث عن index.html في أي مكان وانقله
+          if [ ! -f www/index.html ]; then
+            SRC=$(find . -name "index.html" -not -path "./www/*" -not -path "./node_modules/*" | head -1)
+            if [ -n "$SRC" ]; then
+              echo "نقل $SRC إلى www/"
+              cp "$SRC" www/index.html
+            else
+              echo "خطأ: لم أجد index.html"; exit 1
+            fi
+          fi
+          if [ ! -f www/native.js ]; then
+            SRC=$(find . -name "native.js" -not -path "./www/*" -not -path "./node_modules/*" | head -1)
+            [ -n "$SRC" ] && cp "$SRC" www/native.js || echo "تحذير: لا يوجد native.js"
+          fi
+          echo "=== محتويات www ==="
+          ls -la www
+
+      - name: إنشاء ملفات الإعداد
+        run: |
+          cat > package.json <<'JSON'
+          {
+            "name": "router-easy",
+            "version": "1.0.0",
+            "private": true,
+            "dependencies": {
+              "@capacitor/core": "6.2.0",
+              "@capacitor/android": "6.2.0"
+            },
+            "devDependencies": {
+              "@capacitor/cli": "6.2.0"
+            }
+          }
+          JSON
+          cat > capacitor.config.json <<'JSON'
+          {
+            "appId": "com.routereasy.app",
+            "appName": "Router Easy",
+            "webDir": "www",
+            "android": { "allowMixedContent": true },
+            "server": { "androidScheme": "http", "cleartext": true },
+            "plugins": { "CapacitorHttp": { "enabled": true } }
+          }
+          JSON
+          echo "=== package.json ==="
+          cat package.json
+
+      - name: تثبيت Capacitor
+        run: npm install --no-audit --no-fund --loglevel=error
 
       - name: إنشاء مشروع أندرويد
-        working-directory: apk
         run: |
           npx cap add android
           npx cap sync android
 
-      - name: السماح بالاتصال بالشبكة المحلية
-        working-directory: apk
-        run: python3 fix_manifest.py
+      - name: صلاحيات الشبكة المحلية
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          python3 - <<'PY'
+          p = "android/app/src/main/AndroidManifest.xml"
+          s = open(p, encoding="utf-8").read()
+          need = ["android.permission.INTERNET",
+                  "android.permission.ACCESS_NETWORK_STATE",
+                  "android.permission.ACCESS_WIFI_STATE"]
+          add = [x for x in need if x not in s]
+          if add:
+              blk = "".join('    <uses-permission android:name="%s" />\n' % x for x in add)
+              s = s.replace("</manifest>", blk + "</manifest>")
+          if "usesCleartextTraffic" not in s:
+              s = s.replace("<application", '<application android:usesCleartextTraffic="true"', 1)
+          open(p, "w", encoding="utf-8").write(s)
+          print("تم تعديل AndroidManifest")
+          PY
+          cat $M
 
       - name: بناء الـAPK
-        working-directory: apk/android
         run: |
+          cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon
 
-      - name: رفع الملف الناتج
+      - name: عرض الناتج
+        run: ls -la android/app/build/outputs/apk/debug/
+
+      - name: رفع الـAPK
         uses: actions/upload-artifact@v4
         with:
           name: RouterEasy-APK
-          path: apk/android/app/build/outputs/apk/debug/*.apk
-          retention-days: 90
+          path: android/app/build/outputs/apk/debug/*.apk
 
-      - name: نشر إصدار جاهز للتحميل
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      - name: نشر إصدار
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
           name: Router Easy v${{ github.run_number }}
           body: |
-            ## 📱 تطبيق راوتر إيزي
+            ## تطبيق راوتر إيزي
 
-            حمّل الملف `app-debug.apk` وثبّته على هاتفك.
-
-            **لا يحتاج بايثون ولا أي برنامج آخر.**
-
-            عند التثبيت قد يقول أندرويد «مصدر غير معروف» — اضغط «السماح».
-          files: apk/android/app/build/outputs/apk/debug/*.apk
+            حمّل `app-debug.apk` وثبّته على هاتفك.
+            لا يحتاج بايثون ولا أي برنامج آخر.
+          files: android/app/build/outputs/apk/debug/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
