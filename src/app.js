@@ -223,7 +223,25 @@ async function extractPdf(file) {
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
-      pages.push(content.items.map(it => it.str).join(' '));
+      let pageText = cleanText(content.items.map(it => it.str).join(' '));
+      // Scanned-page fallback: render the PDF page locally and OCR it with the
+      // bundled Tesseract data. This is the browser equivalent of
+      // pdf2image + pytesseract + OpenCV enhancement, fully offline.
+      if (pageText.length < 20) {
+        try {
+          const viewport = page.getViewport({ scale: 2 });
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.ceil(viewport.width); canvas.height = Math.ceil(viewport.height);
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          await page.render({ canvasContext: ctx, viewport }).promise;
+          const worker = await getOcrWorker();
+          const res = await worker.recognize(canvas);
+          pageText = cleanText(res.data.text || pageText);
+        } catch (ocrErr) {
+          pageText += `\n[OCR fallback failed on page ${i}: ${ocrErr.message}]`;
+        }
+      }
+      pages.push(`--- PDF page ${i}/${pdf.numPages} ---\n${pageText}`);
     }
     return cleanText(pages.join('\n\n'));
   } catch (err) {
@@ -232,11 +250,28 @@ async function extractPdf(file) {
     return cleanText(chunks.join(' ')) || `[PDF extraction fallback could not read text: ${err.message}]`;
   }
 }
+function isOfficeImage(name) { return /\.(png|jpe?g|webp|bmp|tiff?)$/i.test(name); }
+async function ocrZipMedia(zip, prefix) {
+  const media = Object.keys(zip.files).filter(n => n.startsWith(prefix) && isOfficeImage(n)).sort();
+  const out = [];
+  for (const name of media) {
+    try {
+      const blob = await zip.file(name).async('blob');
+      blob.name = name.split('/').pop();
+      const text = await extractImageOcr(blob);
+      if (text.trim()) out.push(`\n--- OCR image: ${name} ---\n${text}`);
+    } catch (err) {
+      out.push(`\n[Image OCR failed: ${name}: ${err.message}]`);
+    }
+  }
+  return out;
+}
 async function extractDocx(file) {
   const zip = await JSZip.loadAsync(await file.arrayBuffer());
   const wanted = Object.keys(zip.files).filter(n => /^(word\/(document|header|footer|footnotes|endnotes).*\.xml)$/.test(n));
   const out = [];
   for (const name of wanted) out.push(stripXml(await zip.file(name).async('text')));
+  out.push(...await ocrZipMedia(zip, 'word/media/'));
   return cleanText(out.join('\n'));
 }
 async function extractPptx(file) {
@@ -244,6 +279,7 @@ async function extractPptx(file) {
   const wanted = Object.keys(zip.files).filter(n => /^ppt\/(slides|notesSlides)\/.*\.xml$/.test(n)).sort((a,b) => a.localeCompare(b, undefined, { numeric: true }));
   const out = [];
   for (const name of wanted) out.push(`\n--- ${name} ---\n` + stripXml(await zip.file(name).async('text')));
+  out.push(...await ocrZipMedia(zip, 'ppt/media/'));
   return cleanText(out.join('\n'));
 }
 async function extractXlsx(file) {

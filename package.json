@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build:web": "node tools/build-web.mjs",
+    "build:apk:valid": "npm run build:web && node tools/build-valid-apk.mjs",
     "init": "npx cap add android",
     "sync": "npm run build:web && npx cap sync android",
     "build": "npm run build:web && npx cap sync android && cd android && ./gradlew assembleDebug",

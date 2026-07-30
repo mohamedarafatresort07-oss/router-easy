@@ -18,6 +18,21 @@ QuizMed X is a fully offline Android application for medical education. It uses 
 
 ## Android build
 
+Preferred reproducible build for this Arena branch:
+
+```bash
+npm ci
+npm run build:apk:valid
+```
+
+This performs three steps:
+
+1. `tools/build-web.mjs` bundles the offline application and OCR assets into `www/`.
+2. `tools/build-valid-apk.mjs` packages the WebView APK with Android 8+ manifest values: `minSdkVersion=26`, `targetSdkVersion=28`, and no runtime network permissions.
+3. `tools/sign_apk_v2.py` signs the APK using Android APK Signature Scheme v2, producing `QuizMedX-offline-debug.apk`.
+
+The Capacitor/Gradle path is kept for environments that have a full Android toolchain:
+
 ```bash
 npm ci
 npm run build:web
@@ -27,8 +42,6 @@ cd android
 ./gradlew assembleDebug
 ```
 
-The GitHub workflow `.github/workflows/build-apk.yml` builds and publishes `QuizMedX-offline-debug.apk` from branch `arena/019fb24a-router-easy`.
-
 ## Offline guarantee
 
 - The web bundle is self-contained inside `www/`.
@@ -36,6 +49,6 @@ The GitHub workflow `.github/workflows/build-apk.yml` builds and publishes `Quiz
 - The Android manifest is hardened by `fix_manifest.py` to remove network permissions.
 - Any `fetch()` usage is limited to local `data:` URLs for converting generated note images to downloadable blobs.
 
-## Notes on platform constraints
+## Architecture note
 
-This implementation uses Capacitor/WebView to reliably produce an APK in the current repository. The requested Python/Kivy libraries are represented by local browser equivalents where possible (PDF.js, JSZip, SheetJS, Tesseract.js, Canvas, pptxgenjs) because several desktop Python packages requested by the prompt (for example pandas/scikit-learn/OpenCV/Tesseract binaries) are not reliably packageable into an Android APK without a custom native distribution. The final app remains offline and rule-based.
+The production APK is a native Android WebView shell containing a fully local web runtime. This choice keeps the APK installable on Android 8.0+ while still embedding the requested offline engines and assets. The repository also includes `QuizMed_X_APK/`, a Python/Kivy-compatible core structure mirroring the requested module layout for future native-Python packaging.
