@@ -1,0 +1,1 @@
+/* QuizMed X is fully offline. No native network bridge is used. */

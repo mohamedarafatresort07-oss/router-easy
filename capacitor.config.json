@@ -1,18 +1,12 @@
 {
-  "appId": "com.routereasy.app",
-  "appName": "Router Easy",
+  "appId": "com.quizmedx.offline",
+  "appName": "QuizMed X",
   "webDir": "www",
   "android": {
-    "allowMixedContent": true,
+    "allowMixedContent": false,
     "webContentsDebuggingEnabled": false
   },
   "server": {
-    "androidScheme": "http",
-    "cleartext": true
-  },
-  "plugins": {
-    "CapacitorHttp": {
-      "enabled": true
-    }
+    "androidScheme": "https"
   }
 }

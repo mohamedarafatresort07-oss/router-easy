@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="dark light" />
+  <title>QuizMed X — Offline Medical Learning</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">⚕️</div>
+      <div>
+        <h1>QuizMed X</h1>
+        <p data-i18n="tagline">منصة تعليم طبي خوارزمية تعمل بدون إنترنت</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="status-pill" id="offlinePill">📴 Offline · Rule‑Based</span>
+      <button class="ghost small" id="langBtn" type="button">English</button>
+      <button class="ghost small" id="themeBtn" type="button">🌓</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="side-nav" id="sideNav" aria-label="Main tools">
+      <button class="nav-item active" data-page="dashboard">🏠 <span data-i18n="nav_dashboard">الرئيسية</span></button>
+      <button class="nav-item" data-page="extractor">📚 <span data-i18n="nav_extractor">الاستخراج الفائق</span></button>
+      <button class="nav-item" data-page="generator">🧩 <span data-i18n="nav_generator">توليد الأسئلة</span></button>
+      <button class="nav-item" data-page="bank">🗂️ <span data-i18n="nav_bank">بنك الأسئلة</span></button>
+      <button class="nav-item" data-page="notes">📝 <span data-i18n="nav_notes">صور الملاحظات</span></button>
+      <button class="nav-item" data-page="slides">🎞️ <span data-i18n="nav_slides">العروض</span></button>
+      <button class="nav-item" data-page="quiz">⏱️ <span data-i18n="nav_quiz">اختبار تفاعلي</span></button>
+      <button class="nav-item" data-page="grading">✅ <span data-i18n="nav_grading">التصحيح</span></button>
+      <button class="nav-item" data-page="azhar">🎓 <span data-i18n="nav_azhar">لائحة الأزهر و GPA</span></button>
+      <button class="nav-item" data-page="storage">💾 <span data-i18n="nav_storage">المحفوظات</span></button>
+    </nav>
+
+    <main class="content">
+      <section class="page active" id="page-dashboard">
+        <div class="hero card">
+          <div>
+            <h2 data-i18n="hero_title">QuizMed X — APK طبي خارق بدون إنترنت</h2>
+            <p data-i18n="hero_body">كل المحركات داخل التطبيق تعمل محلياً بخوارزميات وقواعد نصية: استخراج، تنظيف، توليد أسئلة، بنك أسئلة، ملاحظات مصورة، شرائح، اختبار، تصحيح، و GPA وفق لائحة كليات الطب بجامعة الأزهر.</p>
+            <div class="badges">
+              <span>🚫 No API</span><span>🧠 No AI Runtime</span><span>📱 Android 8+</span><span>🇦🇪 RTL/Arabic</span>
+            </div>
+          </div>
+          <div class="hero-meter" aria-label="Offline readiness">
+            <strong>100%</strong><span>Local</span>
+          </div>
+        </div>
+
+        <div class="grid metrics">
+          <div class="metric card"><span data-i18n="metric_files">ملفات معالجة</span><b id="statFiles">0</b></div>
+          <div class="metric card"><span data-i18n="metric_questions">أسئلة مولدة</span><b id="statQuestions">0</b></div>
+          <div class="metric card"><span data-i18n="metric_banks">بنوك محفوظة</span><b id="statBanks">0</b></div>
+          <div class="metric card"><span data-i18n="metric_artifacts">مخرجات</span><b id="statArtifacts">0</b></div>
+        </div>
+
+        <div class="grid two">
+          <div class="card">
+            <h3 data-i18n="quick_start">تشغيل سريع</h3>
+            <ol class="steps">
+              <li data-i18n="step1">ارفع ملفات أو الصق شرحاً طبياً في محرك الاستخراج.</li>
+              <li data-i18n="step2">نظّف النص واستخرج الكيانات أو ولّد أسئلة مباشرة.</li>
+              <li data-i18n="step3">نظّم الأسئلة في بنك، ثم شغّل اختباراً أو صدّر النتائج.</li>
+            </ol>
+          </div>
+          <div class="card">
+            <h3 data-i18n="azhar_snapshot">ملخص التوافق مع لائحة الأزهر</h3>
+            <div id="dashboardAzhar" class="chips"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-extractor">
+        <div class="card page-head">
+          <h2 data-i18n="extractor_title">محرك الاستخراج الفائق</h2>
+          <p data-i18n="extractor_desc">يدعم PDF رقمي، صور OCR محلي، DOCX، PPTX، XLSX/CSV، HTML/TXT. لا توجد حدود مسبقة؛ القيود الوحيدة هي ذاكرة وتخزين الجهاز.</p>
+        </div>
+        <div class="grid two">
+          <div class="card">
+            <label class="file-drop" for="fileInput">
+              <input id="fileInput" type="file" multiple accept=".pdf,.docx,.pptx,.xlsx,.csv,.txt,.md,.html,.htm,image/*" />
+              <b>📥 <span data-i18n="choose_files">اختر الملفات</span></b>
+              <small data-i18n="choose_files_hint">يمكن اختيار أي عدد من الملفات.</small>
+            </label>
+            <div class="toolbar">
+              <button class="primary" id="extractBtn" type="button" data-i18n="extract_files">استخراج الملفات</button>
+              <button class="ghost" id="cleanBtn" type="button" data-i18n="clean_text">تنظيف النص</button>
+              <button class="ghost" id="entitiesBtn" type="button" data-i18n="extract_entities">استخراج الكيانات</button>
+            </div>
+            <div id="fileList" class="file-list"></div>
+            <div id="ocrProgress" class="progress hidden"><span></span><b>0%</b></div>
+          </div>
+          <div class="card">
+            <label class="field"><span data-i18n="source_text">النص المصدر</span><textarea id="sourceText" rows="18" placeholder="الصق المحاضرة أو نتيجة الاستخراج هنا..."></textarea></label>
+            <div class="toolbar">
+              <button class="primary" id="sendToGenerator" type="button" data-i18n="send_generator">إرسال لتوليد الأسئلة</button>
+              <button class="ghost" id="saveCorpusBtn" type="button" data-i18n="save_corpus">حفظ كنص</button>
+              <button class="ghost" id="exportTextBtn" type="button">TXT</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 data-i18n="entities_title">الكيانات المستخرجة</h3>
+          <div id="entitiesOut" class="entity-grid"></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-generator">
+        <div class="card page-head">
+          <h2 data-i18n="generator_title">نظام توليد الأسئلة</h2>
+          <p data-i18n="generator_desc">توليد Rule‑Based من الجمل والأنماط: MCQ، صح/خطأ، أكمل، مطابقة، وتشخيص/علاج/دواء/تشريح بحسب الكلمات والعلاقات الطبية الموجودة في النص فقط.</p>
+        </div>
+        <div class="grid two">
+          <div class="card">
+            <label class="field"><span data-i18n="generator_input">النص المطلوب تحويله إلى أسئلة</span><textarea id="generatorText" rows="18"></textarea></label>
+            <div class="grid compact">
+              <label class="field"><span data-i18n="difficulty">الصعوبة</span><select id="difficulty"><option value="mixed">Mixed</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></label>
+              <label class="field"><span data-i18n="question_types">الأنواع</span><select id="questionProfile"><option value="all">All</option><option value="mcq">MCQ</option><option value="tf">True/False</option><option value="fill">Fill blank</option><option value="matching">Matching</option></select></label>
+            </div>
+            <div class="toolbar">
+              <button class="primary" id="generateBtn" type="button" data-i18n="generate_questions">توليد الأسئلة</button>
+              <button class="ghost" id="appendBankBtn" type="button" data-i18n="append_to_bank">إضافة للبنك</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="between"><h3 data-i18n="generated_questions">الأسئلة المولدة</h3><span id="qCount" class="counter">0</span></div>
+            <div class="toolbar">
+              <button class="ghost" id="exportQuestionsCsv" type="button">CSV</button>
+              <button class="ghost" id="exportQuestionsJson" type="button">JSON</button>
+              <button class="ghost" id="startQuizFromGenerated" type="button" data-i18n="start_quiz">بدء اختبار</button>
+            </div>
+            <div id="questionsOut" class="questions-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-bank">
+        <div class="card page-head">
+          <h2 data-i18n="bank_title">منظم بنك الأسئلة</h2>
+          <p data-i18n="bank_desc">إزالة تكرار ذكية باستخدام تشابه Cosine/Jaccard، تصنيف حسب لائحة الأزهر، ملاحظات غير محدودة، وتصدير CSV/Excel/HTML.</p>
+        </div>
+        <div class="card">
+          <div class="toolbar wrap">
+            <button class="primary" id="dedupeBtn" type="button" data-i18n="dedupe">إزالة المكرر</button>
+            <button class="ghost" id="classifyBtn" type="button" data-i18n="classify">تصنيف</button>
+            <button class="ghost" id="saveBankBtn" type="button" data-i18n="save_bank">حفظ البنك</button>
+            <button class="ghost" id="loadBankBtn" type="button" data-i18n="load_bank">تحميل بنك</button>
+            <button class="ghost" id="exportBankXlsx" type="button">Excel</button>
+            <button class="ghost" id="exportBankHtml" type="button">HTML/PDF</button>
+            <button class="danger" id="clearBankBtn" type="button" data-i18n="clear_bank">مسح</button>
+          </div>
+          <div id="bankSummary" class="chips"></div>
+          <div id="bankOut" class="questions-list"></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-notes">
+        <div class="card page-head">
+          <h2 data-i18n="notes_title">مولد صور الملاحظات الدراسية</h2>
+          <p data-i18n="notes_desc">يرسم PNG محلياً باستخدام Canvas، مع الحفاظ على 100% من النص المصدر وتقسيم تلقائي على عدد الصفحات اللازم.</p>
+        </div>
+        <div class="grid two">
+          <div class="card">
+            <details class="prompt-box"><summary data-i18n="strict_prompt">الأمر المدمج Strict Mode</summary><pre id="strictPrompt"></pre></details>
+            <label class="field"><span data-i18n="notes_topic">العنوان / الموضوع</span><input id="notesTitle" value="Medical Study Notes" /></label>
+            <label class="field"><span data-i18n="notes_text">النص الكامل للملاحظات</span><textarea id="notesText" rows="14"></textarea></label>
+            <div class="toolbar">
+              <button class="primary" id="makeNotesBtn" type="button" data-i18n="generate_notes">توليد الصور</button>
+              <button class="ghost" id="downloadAllNotes" type="button" data-i18n="download_all">تحميل الكل</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="between"><h3 data-i18n="notes_preview">معاينة الصور</h3><span id="notesVerify" class="status-pill">—</span></div>
+            <div id="notesOut" class="notes-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-slides">
+        <div class="card page-head">
+          <h2 data-i18n="slides_title">نظام عروض الشرائح</h2>
+          <p data-i18n="slides_desc">يبني شرائح من العناوين والنقاط والجداول، ثم يصدر HTML أو PPTX محلي بدون إنترنت.</p>
+        </div>
+        <div class="grid two">
+          <div class="card">
+            <label class="field"><span data-i18n="slides_topic">عنوان العرض</span><input id="slidesTitle" value="QuizMed X Lecture" /></label>
+            <label class="field"><span data-i18n="slides_text">النص</span><textarea id="slidesText" rows="16"></textarea></label>
+            <div class="toolbar">
+              <button class="primary" id="buildSlidesBtn" type="button" data-i18n="build_slides">بناء الشرائح</button>
+              <button class="ghost" id="exportSlidesHtml" type="button">HTML</button>
+              <button class="ghost" id="exportSlidesPptx" type="button">PPTX</button>
+            </div>
+          </div>
+          <div class="card"><div id="slidesOut" class="slides-preview"></div></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-quiz">
+        <div class="card page-head">
+          <h2 data-i18n="quiz_title">محرك الاختبار التفاعلي</h2>
+          <p data-i18n="quiz_desc">مؤقت، شريط تقدم، حفظ الإجابات، تصحيح فوري ونتائج تفصيلية.</p>
+        </div>
+        <div class="card">
+          <div class="toolbar wrap">
+            <label class="inline"><span data-i18n="duration_minutes">الدقائق</span><input id="quizMinutes" type="number" min="1" value="10" /></label>
+            <button class="primary" id="startQuizBtn" type="button" data-i18n="start_quiz">بدء اختبار</button>
+            <button class="ghost" id="pauseQuizBtn" type="button" data-i18n="pause">إيقاف مؤقت</button>
+            <button class="danger" id="finishQuizBtn" type="button" data-i18n="finish">إنهاء</button>
+          </div>
+          <div class="quiz-top"><div class="progress"><span id="quizProgress"></span></div><span id="quizTimer">00:00</span></div>
+          <div id="quizOut" class="quiz-box"></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-grading">
+        <div class="card page-head">
+          <h2 data-i18n="grading_title">محرك التصحيح</h2>
+          <p data-i18n="grading_desc">تصحيح موضوعي بالمطابقة بعد التطبيع، وتصحيح مقالي باستخدام Jaccard/Cosine محلياً.</p>
+        </div>
+        <div class="grid two">
+          <div class="card">
+            <label class="field"><span data-i18n="model_answer">الإجابة النموذجية</span><textarea id="modelAnswer" rows="9"></textarea></label>
+            <label class="field"><span data-i18n="student_answer">إجابة الطالب</span><textarea id="studentAnswer" rows="9"></textarea></label>
+            <button class="primary" id="gradeEssayBtn" type="button" data-i18n="grade">تصحيح</button>
+          </div>
+          <div class="card"><div id="gradingOut" class="result-box"></div></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-azhar">
+        <div class="card page-head">
+          <h2 data-i18n="azhar_title">لائحة كلية الطب — جامعة الأزهر</h2>
+          <p data-i18n="azhar_desc">المستويات، الساعات المعتمدة، المقررات، الأقسام، مواصفات الخريج، طرق التدريس، وحساب GPA/CGPA.</p>
+        </div>
+        <div class="grid two">
+          <div class="card">
+            <h3>GPA / CGPA</h3>
+            <div id="gpaRows" class="gpa-rows"></div>
+            <div class="toolbar"><button class="primary" id="addGpaRow" type="button" data-i18n="add_course">إضافة مقرر</button><button class="ghost" id="calcGpa" type="button" data-i18n="calculate">حساب</button></div>
+            <div id="gpaOut" class="result-box"></div>
+          </div>
+          <div class="card">
+            <div class="toolbar wrap"><button class="ghost" data-azhar="courses">Courses</button><button class="ghost" data-azhar="electives">Electives</button><button class="ghost" data-azhar="departments">Departments</button><button class="ghost" data-azhar="attributes">Graduate Attributes</button></div>
+            <div id="azharOut" class="azhar-browser"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-storage">
+        <div class="card page-head">
+          <h2 data-i18n="storage_title">الذاكرة المحلية والمحفوظات</h2>
+          <p data-i18n="storage_desc">IndexedDB داخل الجهاز: بنوك، نصوص، اختبارات، صور، شرائح وإعدادات. لا رفع للخارج.</p>
+        </div>
+        <div class="card">
+          <div class="toolbar wrap"><button class="ghost" id="refreshStorage" type="button" data-i18n="refresh">تحديث</button><button class="danger" id="wipeStorage" type="button" data-i18n="wipe_storage">مسح كل المحفوظات</button></div>
+          <div id="storageOut" class="storage-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+  <script src="native.js"></script>
+</body>
+</html>

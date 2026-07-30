@@ -1,27 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""يضيف صلاحيات الشبكة المحلية إلى AndroidManifest.xml"""
-import os, sys
+"""QuizMed X manifest hardening.
 
-P = "android/app/src/main/AndroidManifest.xml"
-if not os.path.exists(P):
-    print("لم أجد AndroidManifest.xml"); sys.exit(1)
+The APK is fully offline. This script removes network permissions that are not
+needed by the local WebView app and sets clear offline-friendly metadata.
+"""
+from pathlib import Path
+import re
 
-s = open(P, encoding="utf-8").read()
+p = Path("android/app/src/main/AndroidManifest.xml")
+if not p.exists():
+    raise SystemExit("AndroidManifest.xml not found")
 
-NEEDED = ["android.permission.INTERNET",
-          "android.permission.ACCESS_NETWORK_STATE",
-          "android.permission.ACCESS_WIFI_STATE"]
+s = p.read_text(encoding="utf-8")
+# Remove network permissions to make the no-external-API guarantee visible.
+for perm in [
+    "android.permission.INTERNET",
+    "android.permission.ACCESS_NETWORK_STATE",
+    "android.permission.ACCESS_WIFI_STATE",
+]:
+    s = re.sub(rf"\s*<uses-permission\s+android:name=\"{re.escape(perm)}\"\s*/>", "", s)
 
-add = [p for p in NEEDED if p not in s]
-if add:
-    block = "".join('    <uses-permission android:name="%s" />\n' % p for p in add)
-    s = s.replace("</manifest>", block + "</manifest>")
-    print("+ أضفت %d صلاحية شبكة" % len(add))
+s = s.replace(' android:usesCleartextTraffic="true"', '')
+s = s.replace(' android:usesCleartextTraffic="false"', '')
+if 'android:label="QuizMed X"' not in s:
+    s = re.sub(r'android:label="[^"]+"', 'android:label="QuizMed X"', s, count=1)
 
-if "usesCleartextTraffic" not in s:
-    s = s.replace("<application", '<application android:usesCleartextTraffic="true"', 1)
-    print("+ فعّلت اتصالات HTTP العادية")
-
-open(P, "w", encoding="utf-8").write(s)
-print("تم تعديل AndroidManifest بنجاح")
+p.write_text(s, encoding="utf-8")
+print("QuizMed X manifest hardened for offline APK")

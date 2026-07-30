@@ -1,19 +1,29 @@
 {
-  "name": "router-easy",
-  "version": "3.0.0",
-  "description": "Router Easy - واجهة مبسطة للتحكم في الراوتر",
+  "name": "quizmed-x-apk",
+  "version": "1.0.0",
+  "description": "QuizMed X — offline rule-based medical education Android APK",
   "private": true,
+  "type": "module",
   "scripts": {
+    "build:web": "node tools/build-web.mjs",
     "init": "npx cap add android",
-    "sync": "npx cap sync android",
-    "build": "npx cap sync android && cd android && ./gradlew assembleDebug",
+    "sync": "npm run build:web && npx cap sync android",
+    "build": "npm run build:web && npx cap sync android && cd android && ./gradlew assembleDebug",
     "open": "npx cap open android"
   },
   "dependencies": {
     "@capacitor/android": "^6.2.0",
-    "@capacitor/core": "^6.2.0"
+    "@capacitor/core": "^6.2.0",
+    "@tesseract.js-data/ara": "^1.0.0",
+    "@tesseract.js-data/eng": "^1.0.0",
+    "jszip": "^3.10.1",
+    "pdfjs-dist": "^3.11.174",
+    "pptxgenjs": "^3.12.0",
+    "tesseract.js": "^5.1.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.2.0"
+    "@capacitor/cli": "^6.2.0",
+    "esbuild": "^0.25.8"
   }
 }

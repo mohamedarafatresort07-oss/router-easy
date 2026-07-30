@@ -1,0 +1,13 @@
+kivy==2.2.1
+pdfplumber
+pdf2image
+pytesseract
+opencv-python
+Pillow
+python-docx
+python-pptx
+openpyxl
+pandas
+scikit-learn
+reportlab
+numpy
