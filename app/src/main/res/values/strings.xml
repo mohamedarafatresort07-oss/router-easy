@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Stealth Call Recorder</string>
+    <string name="app_name">QuizMed</string>
+    <string name="institution">كلية الطب – جامعة الأزهر</string>
+    <string name="author">Prepared By: Dr Mohamed Arafat</string>
+    <string name="opening_doa">رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي</string>
+    <string name="create_exam">إنشاء اختبار</string>
+    <string name="question_bank">بنك الأسئلة</string>
+    <string name="presentation">توليد شرائح</string>
+    <string name="log">السجل</string>
 </resources>
